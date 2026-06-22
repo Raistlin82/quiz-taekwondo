@@ -1,0 +1,253 @@
+/* ============================================================
+   Active-game state machine (runes). Replaces the old module-
+   level globals. Drives the screen router in App.svelte.
+   ============================================================ */
+
+import { POOL } from '../data/questions';
+import { DIFFICULTIES, TIME_PER_Q, type DifficultyKey, type Question } from '../data/belts';
+import { playSound, vibrate } from '../audio';
+import { burst, rain } from '../confetti';
+import { themeStore } from './theme.svelte';
+import { progressStore, answerXp, type GameResult } from './progress.svelte';
+
+export type Screen = 'start' | 'quiz' | 'end' | 'study';
+export type GameMode = 'quiz' | 'review';
+
+/** Stable key for a question (used by the SRS queue). */
+export const qKey = (q: Question): string => q.q;
+
+const shuffle = <T>(a: T[]): T[] => {
+  const x = a.slice();
+  for (let i = x.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [x[i], x[j]] = [x[j], x[i]];
+  }
+  return x;
+};
+
+/** Shuffle a question's options and re-point answer to the new index. */
+function shuffleOptions(q: Question): Question {
+  const correct = q.options[q.answer];
+  const options = shuffle(q.options);
+  return { ...q, options, answer: options.indexOf(correct) };
+}
+
+export interface EndSummary {
+  newBadges: string[];
+  xpGained: number;
+}
+
+class GameStore {
+  screen = $state<Screen>('start');
+  mode = $state<GameMode>('quiz');
+
+  // selections
+  selBelt = $state(4); // default: Verde-Blu
+  selDiff = $state<DifficultyKey>('medio');
+  playerName = $state('');
+
+  // active game
+  questions = $state<Question[]>([]);
+  idx = $state(0);
+  score = $state(0);
+  answered = $state(false);
+  selected = $state<number | null>(null);
+  streak = $state(0);
+  maxStreak = $state(0);
+  fastCount = $state(0);
+  gameXp = $state(0);
+  lastGain = $state(0); // XP gained on the last answer (for the popup)
+  wrong = $state<Question[]>([]);
+  timeLeft = $state(TIME_PER_Q);
+
+  // end-of-game
+  summary = $state<EndSummary | null>(null);
+
+  private correctKeys: string[] = [];
+  private timerId: ReturnType<typeof setInterval> | null = null;
+
+  get current(): Question | undefined {
+    return this.questions[this.idx];
+  }
+  get total(): number {
+    return this.questions.length;
+  }
+  get isLast(): boolean {
+    return this.idx === this.total - 1;
+  }
+  get pct(): number {
+    return this.total ? this.score / this.total : 0;
+  }
+  get progressPct(): number {
+    return this.total ? Math.round((this.idx / this.total) * 100) : 0;
+  }
+  get isReview(): boolean {
+    return this.mode === 'review';
+  }
+
+  /** Build a balanced quiz: filter by belt+difficulty, round-robin by category. */
+  private buildGame(): Question[] {
+    const maxLvl = DIFFICULTIES[this.selDiff].maxLvl;
+    const avail = POOL.filter((q) => q.belt <= this.selBelt && q.lvl <= maxLvl);
+    const byCat: Record<string, Question[]> = {};
+    for (const q of avail) (byCat[q.cat] = byCat[q.cat] || []).push(q);
+    const cats = shuffle(Object.keys(byCat));
+    for (const c of cats) byCat[c] = shuffle(byCat[c]);
+
+    const picked: Question[] = [];
+    const target = Math.min(DIFFICULTIES[this.selDiff].count, avail.length);
+    let safety = 0;
+    while (picked.length < target && safety < 800) {
+      for (const c of cats) {
+        const item = byCat[c].pop();
+        if (item) picked.push(item);
+        if (picked.length >= target) break;
+      }
+      safety++;
+    }
+    return shuffle(picked).map(shuffleOptions);
+  }
+
+  /** Build a review session from SRS-due questions (study mode). */
+  private buildReview(limit = 15): Question[] {
+    const due = new Set(progressStore.dueKeys());
+    const items = POOL.filter((q) => due.has(qKey(q)));
+    return shuffle(items).slice(0, limit).map(shuffleOptions);
+  }
+
+  private resetCounters(): void {
+    this.idx = 0;
+    this.score = 0;
+    this.streak = 0;
+    this.maxStreak = 0;
+    this.fastCount = 0;
+    this.gameXp = 0;
+    this.lastGain = 0;
+    this.wrong = [];
+    this.correctKeys = [];
+    this.summary = null;
+  }
+
+  startQuiz(): void {
+    this.playerName = (this.playerName.trim() || 'Ospite').slice(0, 18);
+    this.mode = 'quiz';
+    this.questions = this.buildGame();
+    this.resetCounters();
+    this.screen = 'quiz';
+    this.beginQuestion();
+  }
+
+  startReview(): void {
+    const review = this.buildReview();
+    if (!review.length) return;
+    this.playerName = (this.playerName.trim() || 'Ospite').slice(0, 18);
+    this.mode = 'review';
+    this.questions = review;
+    this.resetCounters();
+    this.screen = 'quiz';
+    this.beginQuestion();
+  }
+
+  private beginQuestion(): void {
+    this.answered = false;
+    this.selected = null;
+    this.lastGain = 0;
+    this.startTimer();
+  }
+
+  /** Reveal the answer. `i` is the chosen index, or null on timeout. */
+  answer(i: number | null): void {
+    if (this.answered) return;
+    this.answered = true;
+    this.stopTimer();
+    const q = this.current;
+    if (!q) return;
+    this.selected = i;
+
+    const correct = i === q.answer;
+    if (correct) {
+      this.score += 1;
+      this.streak += 1;
+      this.maxStreak = Math.max(this.maxStreak, this.streak);
+      const gain = answerXp(this.timeLeft);
+      this.lastGain = gain;
+      this.gameXp += gain;
+      if (this.timeLeft > 7) this.fastCount += 1;
+      this.correctKeys.push(qKey(q));
+      playSound('good', themeStore.sound);
+      vibrate(30, themeStore.haptics);
+      burst();
+      // In review mode, grade the SRS card immediately.
+      if (this.isReview) progressStore.reviewGraded(qKey(q), true);
+    } else {
+      this.streak = 0;
+      this.wrong = [...this.wrong, q];
+      playSound('bad', themeStore.sound);
+      vibrate([40, 30, 40], themeStore.haptics);
+      if (this.isReview) progressStore.reviewGraded(qKey(q), false);
+    }
+  }
+
+  next(): void {
+    if (this.isLast) {
+      this.endGame();
+    } else {
+      this.idx += 1;
+      this.beginQuestion();
+    }
+  }
+
+  private endGame(): void {
+    this.stopTimer();
+    if (this.isReview) {
+      const newBadges = progressStore.completeStudySession();
+      this.summary = { newBadges, xpGained: 0 };
+    } else {
+      const result: GameResult = {
+        belt: this.selBelt,
+        correct: this.score,
+        total: this.total,
+        maxStreak: this.maxStreak,
+        fastCount: this.fastCount,
+        passed: this.pct >= 0.87,
+        xpGained: this.gameXp,
+        missedKeys: this.wrong.map(qKey),
+        correctKeys: this.correctKeys,
+      };
+      this.summary = progressStore.recordGame(result);
+      if (this.pct >= 0.87) rain();
+    }
+    this.screen = 'end';
+  }
+
+  goHome(): void {
+    this.stopTimer();
+    this.screen = 'start';
+  }
+
+  goStudy(): void {
+    this.stopTimer();
+    this.screen = 'study';
+  }
+
+  /* ---- timer ---- */
+  private startTimer(): void {
+    this.stopTimer();
+    this.timeLeft = TIME_PER_Q;
+    this.timerId = setInterval(() => {
+      this.timeLeft = Math.max(0, Math.round((this.timeLeft - 0.1) * 10) / 10);
+      if (this.timeLeft <= 0) {
+        this.stopTimer();
+        this.answer(null);
+      }
+    }, 100);
+  }
+  private stopTimer(): void {
+    if (this.timerId !== null) {
+      clearInterval(this.timerId);
+      this.timerId = null;
+    }
+  }
+}
+
+export const gameStore = new GameStore();
