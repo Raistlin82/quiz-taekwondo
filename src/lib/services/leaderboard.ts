@@ -61,6 +61,10 @@ export function clearLocal(): void {
 const sortRows = (a: ScoreRow, b: ScoreRow) =>
   b.pct - a.pct || b.score - a.score || (a.ts ?? 0) - (b.ts ?? 0);
 
+// Names used for connectivity/setup tests that must never appear on the board.
+const JUNK_NAMES = new Set(['__smoketest__']);
+const dropJunk = (rows: ScoreRow[]): ScoreRow[] => rows.filter((r) => !JUNK_NAMES.has(r.name));
+
 /**
  * Submit a score and return the (sorted, top-100) leaderboard.
  * Falls back to localStorage when Supabase is unavailable.
@@ -96,7 +100,7 @@ export async function submitAndFetch(entry: SubmitInput): Promise<LeaderboardRes
           { headers: sbHeaders() },
         );
         if (!r2.ok) throw new Error('get failed');
-        const rows = (await r2.json()) as ScoreRow[];
+        const rows = dropJunk((await r2.json()) as ScoreRow[]);
         return { rows, myId, online: true };
       } catch {
         // Submission succeeded; only the board read failed. Show what we have.
