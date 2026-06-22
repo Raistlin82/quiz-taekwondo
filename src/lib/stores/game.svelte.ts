@@ -52,7 +52,7 @@ class GameStore {
   mode = $state<GameMode>('quiz');
 
   // selections
-  selBelt = $state(4); // default: Verde-Blu
+  selBelt = $state(5); // default: Verde-Blu (id 5 in the 10-belt scale)
   selDiff = $state<DifficultyKey>('medio');
   playerName = $state('');
 

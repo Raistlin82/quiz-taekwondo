@@ -5,9 +5,11 @@ import type { Question } from './belts';
    belt = cintura minima a cui compare · lvl = difficoltà 1/2/3
    Contenuti tratti dal manuale ECLIPSE Taekwon-Do Academy ed
    estesi con nozioni canoniche ITF (Enciclopedia del Gen. Choi).
-   Mappa forme→cinture: 1 Gialla=Chon-Ji · 2 Gialla sup=Dan-Gun/Do-San
-   3 Verde=Won-Hyo · 4 Verde-Blu=Yul-Gok · 5 Blu=Joong-Gun
-   6 Blu sup=Toi-Gye · 7 Rossa=Hwa-Rang · 8 Nera=Choong-Moo
+   Forme→cinture (standard ITF, una forma per grado):
+   1 Bianca sup=Chon-Ji · 2 Gialla=Dan-Gun · 3 Gialla sup=Do-San ·
+   4 Verde=Won-Hyo · 5 Verde-Blu=Yul-Gok · 6 Blu=Joong-Gun ·
+   7 Blu sup=Toi-Gye · 8 Rossa=Hwa-Rang · 9 Rossa sup=Choong-Moo ·
+   10 Nera=Kwang-Gae (1° dan).
    ============================================================ */
 
 export const POOL: Question[] = [
@@ -26,7 +28,7 @@ export const POOL: Question[] = [
   { cat: '📜 Storia & Teoria', belt: 3, lvl: 3, q: "In quale anno nacque ufficialmente il nome 'Taekwon-Do'?", options: ['1955', '1966', '1918', '1945'], answer: 0, explain: "L'11 aprile 1955 la commissione scelse il nome 'Taekwon-Do'." },
   { cat: '📜 Storia & Teoria', belt: 3, lvl: 3, q: 'In che anno nacque il Generale Choi Hong Hi?', options: ['1918', '1900', '1935', '1945'], answer: 0, explain: 'Il Gen. Choi Hong Hi nacque il 9 novembre 1918.' },
   { cat: '📜 Storia & Teoria', belt: 3, lvl: 3, q: "Come si chiama l'opera in cui il Gen. Choi raccolse tutto il Taekwon-Do?", options: ["L'Enciclopedia del Taekwon-Do", 'Il Libro dei Cinque Anelli', 'Il Tao del pugno', 'Il Bushido'], answer: 0, explain: "Il Gen. Choi scrisse l'Enciclopedia del Taekwon-Do in 15 volumi." },
-  { cat: '📜 Storia & Teoria', belt: 6, lvl: 3, q: 'Quale movimento è caratteristico delle tecniche ITF?', options: ['Il movimento ondulatorio (sine wave)', 'Il salto continuo', 'La rotazione dei fianchi a 360°', 'Il passo strisciato'], answer: 0, explain: 'Il movimento ondulatorio (su-giù) genera potenza ed è tipico dello stile ITF.' },
+  { cat: '📜 Storia & Teoria', belt: 7, lvl: 3, q: 'Quale movimento è caratteristico delle tecniche ITF?', options: ['Il movimento ondulatorio (sine wave)', 'Il salto continuo', 'La rotazione dei fianchi a 360°', 'Il passo strisciato'], answer: 0, explain: 'Il movimento ondulatorio (su-giù) genera potenza ed è tipico dello stile ITF.' },
 
   // ===== LE CINTURE =====
   { cat: '🟢 Le Cinture', belt: 1, lvl: 1, q: 'Cosa rappresenta la cintura VERDE?', options: ['La pianta che comincia a germogliare', 'La notte', 'Il tramonto', 'La terra fertile'], answer: 0, explain: "Il verde è la pianta che germoglia: l'arte comincia a svilupparsi." },
@@ -94,20 +96,25 @@ export const POOL: Question[] = [
   { cat: '🥋 Le Forme', belt: 1, lvl: 3, q: 'Quanti movimenti ha la forma Chon-Ji?', options: ['19', '21', '24', '28'], answer: 0, explain: 'Chon-Ji ha 19 movimenti.' },
   { cat: '🥋 Le Forme', belt: 2, lvl: 2, q: "A chi è dedicata la forma 'Dan-Gun'?", options: ['Al leggendario fondatore della Corea (2333 a.C.)', 'A un monaco buddista', 'A un ammiraglio', 'A un filosofo'], answer: 0, explain: 'Dan-Gun è il leggendario fondatore della Corea nel 2333 a.C.' },
   { cat: '🥋 Le Forme', belt: 2, lvl: 3, q: 'Quanti movimenti ha la forma Dan-Gun?', options: ['21', '19', '24', '28'], answer: 0, explain: 'Dan-Gun ha 21 movimenti.' },
-  { cat: '🥋 Le Forme', belt: 2, lvl: 2, q: "Da chi prende il nome la forma 'Do-San'?", options: ['Dal patriota Ahn Chang Ho', 'Da un re', 'Da un monaco', 'Da un generale giapponese'], answer: 0, explain: 'Do-San è lo pseudonimo del patriota Ahn Chang Ho.' },
-  { cat: '🥋 Le Forme', belt: 2, lvl: 3, q: 'Quanti movimenti ha la forma Do-San?', options: ['24', '21', '28', '19'], answer: 0, explain: 'Do-San ha 24 movimenti.' },
-  { cat: '🥋 Le Forme', belt: 3, lvl: 2, q: "Chi era 'Won-Hyo', a cui è dedicata la forma?", options: ['Il monaco che introdusse il Buddismo in Corea', 'Un ammiraglio', 'Il fondatore della Corea', 'Un filosofo confuciano'], answer: 0, explain: 'Won-Hyo introdusse il Buddismo in Corea nel 686 d.C.' },
-  { cat: '🥋 Le Forme', belt: 3, lvl: 3, q: 'Quanti movimenti ha la forma Won-Hyo?', options: ['28', '24', '21', '30'], answer: 0, explain: 'Won-Hyo ha 28 movimenti.' },
-  { cat: '🥋 Le Forme', belt: 4, lvl: 2, q: 'Qual è la forma della cintura Verde-Blu?', options: ['Yul-Gok', 'Won-Hyo', 'Joong-Gun', 'Chon-Ji'], answer: 0, explain: 'Yul-Gok è la forma del 5° gup (verde con striscia blu).' },
-  { cat: '🥋 Le Forme', belt: 4, lvl: 2, q: "A chi è dedicata la forma 'Yul-Gok'?", options: ["Al filosofo Yil, 'il Confucio della Corea'", 'A un ammiraglio', 'A un monaco buddista', 'Al fondatore della Corea'], answer: 0, explain: "Yul-Gok è lo pseudonimo del filosofo Yil, detto 'il Confucio della Corea'." },
-  { cat: '🥋 Le Forme', belt: 4, lvl: 3, q: 'Quanti movimenti ha la forma Yul-Gok?', options: ['38', '28', '32', '24'], answer: 0, explain: 'Yul-Gok ha 38 movimenti (come il 38° parallelo).' },
-  { cat: '🥋 Le Forme', belt: 5, lvl: 2, q: "A chi è dedicata la forma 'Joong-Gun'?", options: ['Al patriota Ahn Joong Gun', 'A un filosofo', 'A un monaco', 'A un re'], answer: 0, explain: 'Joong-Gun ricorda il patriota Ahn Joong Gun.' },
-  { cat: '🥋 Le Forme', belt: 5, lvl: 3, q: 'Quanti movimenti ha la forma Joong-Gun?', options: ['32', '30', '38', '29'], answer: 0, explain: "Joong-Gun ha 32 movimenti (l'età di Ahn quando fu giustiziato, 1910)." },
-  { cat: '🥋 Le Forme', belt: 6, lvl: 2, q: "La forma 'Toi-Gye' è dedicata a...", options: ['Lo studioso Yi Hwang, del Neoconfucianesimo', 'Un ammiraglio', 'Un monaco', 'Il fondatore della Corea'], answer: 0, explain: "Toi-Gye è lo pseudonimo dello studioso Yi Hwang del XVI secolo." },
-  { cat: '🥋 Le Forme', belt: 6, lvl: 3, q: 'Quanti movimenti ha la forma Toi-Gye?', options: ['37', '32', '29', '38'], answer: 0, explain: 'Toi-Gye ha 37 movimenti (il 37° parallelo, suo luogo di nascita).' },
-  { cat: '🥋 Le Forme', belt: 7, lvl: 2, q: "Da cosa prende il nome la forma 'Hwa-Rang'?", options: ['Dal gruppo giovanile Hwa Rang della dinastia Silla', 'Da un ammiraglio', 'Da un filosofo', 'Da un re'], answer: 0, explain: 'Hwa-Rang è il gruppo giovanile nato nella dinastia Silla nel VII secolo.' },
-  { cat: '🥋 Le Forme', belt: 7, lvl: 3, q: 'Quanti movimenti ha la forma Hwa-Rang?', options: ['29', '30', '32', '37'], answer: 0, explain: 'Hwa-Rang ha 29 movimenti (la 29ª divisione di fanteria).' },
-  { cat: '🥋 Le Forme', belt: 8, lvl: 2, q: "La forma 'Choong-Moo' è dedicata a...", options: ["L'ammiraglio Yi Soon Sin", 'Un filosofo', 'Un monaco buddista', 'Un re'], answer: 0, explain: 'Choong-Moo ricorda l\'ammiraglio Yi Soon Sin, inventore della prima nave corazzata (1592).' },
-  { cat: '🥋 Le Forme', belt: 8, lvl: 3, q: 'Quanti movimenti ha la forma Choong-Moo?', options: ['30', '29', '32', '37'], answer: 0, explain: 'Choong-Moo ha 30 movimenti.' },
-  { cat: '🥋 Le Forme', belt: 8, lvl: 3, q: 'Quante forme (tul) si imparano prima della cintura nera?', options: ['9', '6', '12', '5'], answer: 0, explain: 'Le 9 forme dei gup: Chon-Ji, Dan-Gun, Do-San, Won-Hyo, Yul-Gok, Joong-Gun, Toi-Gye, Hwa-Rang, Choong-Moo.' },
+  { cat: '🥋 Le Forme', belt: 3, lvl: 2, q: "Da chi prende il nome la forma 'Do-San'?", options: ['Dal patriota Ahn Chang Ho', 'Da un re', 'Da un monaco', 'Da un generale giapponese'], answer: 0, explain: 'Do-San è lo pseudonimo del patriota Ahn Chang Ho.' },
+  { cat: '🥋 Le Forme', belt: 3, lvl: 3, q: 'Quanti movimenti ha la forma Do-San?', options: ['24', '21', '28', '19'], answer: 0, explain: 'Do-San ha 24 movimenti.' },
+  { cat: '🥋 Le Forme', belt: 4, lvl: 2, q: "Chi era 'Won-Hyo', a cui è dedicata la forma?", options: ['Il monaco che introdusse il Buddismo in Corea', 'Un ammiraglio', 'Il fondatore della Corea', 'Un filosofo confuciano'], answer: 0, explain: 'Won-Hyo introdusse il Buddismo in Corea nel 686 d.C.' },
+  { cat: '🥋 Le Forme', belt: 4, lvl: 3, q: 'Quanti movimenti ha la forma Won-Hyo?', options: ['28', '24', '21', '30'], answer: 0, explain: 'Won-Hyo ha 28 movimenti.' },
+  { cat: '🥋 Le Forme', belt: 5, lvl: 2, q: 'Qual è la forma della cintura Verde-Blu?', options: ['Yul-Gok', 'Won-Hyo', 'Joong-Gun', 'Chon-Ji'], answer: 0, explain: 'Yul-Gok è la forma del 5° gup (verde con striscia blu).' },
+  { cat: '🥋 Le Forme', belt: 5, lvl: 2, q: "A chi è dedicata la forma 'Yul-Gok'?", options: ["Al filosofo Yil, 'il Confucio della Corea'", 'A un ammiraglio', 'A un monaco buddista', 'Al fondatore della Corea'], answer: 0, explain: "Yul-Gok è lo pseudonimo del filosofo Yil, detto 'il Confucio della Corea'." },
+  { cat: '🥋 Le Forme', belt: 5, lvl: 3, q: 'Quanti movimenti ha la forma Yul-Gok?', options: ['38', '28', '32', '24'], answer: 0, explain: 'Yul-Gok ha 38 movimenti (come il 38° parallelo).' },
+  { cat: '🥋 Le Forme', belt: 6, lvl: 2, q: "A chi è dedicata la forma 'Joong-Gun'?", options: ['Al patriota Ahn Joong Gun', 'A un filosofo', 'A un monaco', 'A un re'], answer: 0, explain: 'Joong-Gun ricorda il patriota Ahn Joong Gun.' },
+  { cat: '🥋 Le Forme', belt: 6, lvl: 3, q: 'Quanti movimenti ha la forma Joong-Gun?', options: ['32', '30', '38', '29'], answer: 0, explain: "Joong-Gun ha 32 movimenti (l'età di Ahn quando fu giustiziato, 1910)." },
+  { cat: '🥋 Le Forme', belt: 7, lvl: 2, q: "La forma 'Toi-Gye' è dedicata a...", options: ['Lo studioso Yi Hwang, del Neoconfucianesimo', 'Un ammiraglio', 'Un monaco', 'Il fondatore della Corea'], answer: 0, explain: "Toi-Gye è lo pseudonimo dello studioso Yi Hwang del XVI secolo." },
+  { cat: '🥋 Le Forme', belt: 7, lvl: 3, q: 'Quanti movimenti ha la forma Toi-Gye?', options: ['37', '32', '29', '38'], answer: 0, explain: 'Toi-Gye ha 37 movimenti (il 37° parallelo, suo luogo di nascita).' },
+  { cat: '🥋 Le Forme', belt: 8, lvl: 2, q: "Da cosa prende il nome la forma 'Hwa-Rang'?", options: ['Dal gruppo giovanile Hwa Rang della dinastia Silla', 'Da un ammiraglio', 'Da un filosofo', 'Da un re'], answer: 0, explain: 'Hwa-Rang è il gruppo giovanile nato nella dinastia Silla nel VII secolo.' },
+  { cat: '🥋 Le Forme', belt: 8, lvl: 3, q: 'Quanti movimenti ha la forma Hwa-Rang?', options: ['29', '30', '32', '37'], answer: 0, explain: 'Hwa-Rang ha 29 movimenti (la 29ª divisione di fanteria).' },
+  { cat: '🥋 Le Forme', belt: 9, lvl: 2, q: "La forma 'Choong-Moo' è dedicata a...", options: ["L'ammiraglio Yi Soon Sin", 'Un filosofo', 'Un monaco buddista', 'Un re'], answer: 0, explain: 'Choong-Moo ricorda l\'ammiraglio Yi Soon Sin, inventore della prima nave corazzata (1592).' },
+  { cat: '🥋 Le Forme', belt: 9, lvl: 3, q: 'Quanti movimenti ha la forma Choong-Moo?', options: ['30', '29', '32', '37'], answer: 0, explain: 'Choong-Moo ha 30 movimenti.' },
+  { cat: '🥋 Le Forme', belt: 9, lvl: 3, q: 'Quante forme (tul) si imparano prima della cintura nera?', options: ['9', '6', '12', '5'], answer: 0, explain: 'Le 9 forme dei gup: Chon-Ji, Dan-Gun, Do-San, Won-Hyo, Yul-Gok, Joong-Gun, Toi-Gye, Hwa-Rang, Choong-Moo.' },
+
+  // ===== CINTURA NERA (1° dan) =====
+  { cat: '🥋 Le Forme', belt: 10, lvl: 2, q: 'Qual è la prima forma della cintura nera (1° dan)?', options: ['Kwang-Gae', 'Choong-Moo', 'Hwa-Rang', 'Chon-Ji'], answer: 0, explain: 'Dopo le 9 forme dei gup, il 1° dan inizia con Kwang-Gae.' },
+  { cat: '🥋 Le Forme', belt: 10, lvl: 3, q: "A chi è dedicata la forma 'Kwang-Gae'?", options: ['Al re Kwang-Gae-Toh il Grande di Goguryeo', 'A un ammiraglio', 'A un monaco', 'A un filosofo'], answer: 0, explain: 'Kwang-Gae ricorda il re Gwanggaeto il Grande, che ampliò i territori della Corea.' },
+  { cat: '🥋 Le Forme', belt: 10, lvl: 3, q: 'Quanti movimenti ha la forma Kwang-Gae?', options: ['39', '30', '44', '29'], answer: 0, explain: 'Kwang-Gae ha 39 movimenti (riferimento al 391 d.C., anno della sua ascesa al trono).' },
 ];

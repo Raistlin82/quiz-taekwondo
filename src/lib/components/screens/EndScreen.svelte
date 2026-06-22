@@ -66,15 +66,15 @@
   // Celebration, timed to land as the score ring finishes filling (U35/U31/U38).
   onMount(() => {
     const s = gameStore.summary;
-    const shouldRain = (!isReview && pct >= 0.87) || s?.leveledTo != null;
-    let t1: ReturnType<typeof setTimeout> | undefined;
-    let t2: ReturnType<typeof setTimeout> | undefined;
-    if (shouldRain) t1 = setTimeout(() => rain(), 820); // rain() self-guards reduced-motion
-    if (s && s.newBadges.length) t2 = setTimeout(() => playSound('win', themeStore.sound), 500);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const passed = !isReview && pct >= 0.87;
+    if (passed || s?.leveledTo != null) {
+      timers.push(setTimeout(() => rain(), 820)); // rain() self-guards reduced-motion
+    }
+    if (passed) timers.push(setTimeout(() => playSound('win', themeStore.sound), 820));
+    if (s?.leveledTo != null) timers.push(setTimeout(() => playSound('levelup', themeStore.sound), 620));
+    if (s && s.newBadges.length) timers.push(setTimeout(() => playSound('badge', themeStore.sound), 460));
+    return () => timers.forEach(clearTimeout);
   });
 
   function resetLocal() {

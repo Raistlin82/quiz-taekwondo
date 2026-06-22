@@ -1,7 +1,7 @@
 # 🥋 Quiz Taekwon-Do · Esame Cinture
 
 Gioco a quiz (in italiano) per allenarsi all'esame di cintura di Taekwon-Do ITF.
-Scegli la **cintura** (Gialla → Nera) e il **livello di difficoltà**, rispondi con un
+Scegli la **cintura** (Bianca sup. → Nera) e il **livello di difficoltà**, rispondi con un
 **timer di 10 secondi**, accumula **XP, serie (streak) e traguardi**, ripassa gli errori
 con la **modalità studio** e scala la **classifica**.
 
@@ -23,8 +23,8 @@ npm run check    # type-check (svelte-check + tsc)
 ```
 
 ## 🎮 Come si gioca
-- **Cintura**: Gialla, Gialla superiore, Verde, Verde-Blu, Blu, Blu superiore, Rossa, Nera
-  (cumulativa: ogni cintura include le domande delle cinture inferiori).
+- **Cintura**: Bianca superiore, Gialla, Gialla superiore, Verde, Verde-Blu, Blu, Blu superiore,
+  Rossa, Rossa superiore, Nera — 10 gradi (cumulativa: ogni cintura include le domande dei gradi inferiori).
 - **Difficoltà**: Facile (10 domande, livello 1), Medio (15, liv. 1-2), Tosto (20, tutti i livelli).
 - **Quiz**: 10 secondi per risposta, punteggio, serie 🔥, XP con bonus velocità, coriandoli 🎉.
 - **Traguardi**: badge sbloccabili (esame perfetto, fulmine, serie da 10, maestro…).

@@ -180,7 +180,7 @@ class ProgressStore {
     if (r.fastCount > 0) this.unlock('speed', newBadges);
     if (r.correct === r.total && r.total > 0) this.unlock('perfect', newBadges);
     if (this.data.xp >= 500) this.unlock('xp500', newBadges);
-    if (r.belt === 8 && r.passed) this.unlock('blackbelt', newBadges);
+    if (r.belt === 10 && r.passed) this.unlock('blackbelt', newBadges);
 
     const levelAfter = levelFromXp(this.data.xp).level;
     this.persist();

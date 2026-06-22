@@ -32,19 +32,24 @@ export interface Question {
   explain: string;
 }
 
-/** Belts in progression order. Forms (tul) mapping:
- *  1 Gialla=Chon-Ji · 2 Gialla sup=Dan-Gun/Do-San · 3 Verde=Won-Hyo ·
- *  4 Verde-Blu=Yul-Gok · 5 Blu=Joong-Gun · 6 Blu sup=Toi-Gye ·
- *  7 Rossa=Hwa-Rang · 8 Nera=Choong-Moo */
+/** Belts in progression order (10° → 1° gup, then 1° dan). Forms (tul)
+ *  mapping — standard ITF, one tul per gup:
+ *  1 Bianca sup=Chon-Ji · 2 Gialla=Dan-Gun · 3 Gialla sup=Do-San ·
+ *  4 Verde=Won-Hyo · 5 Verde-Blu=Yul-Gok · 6 Blu=Joong-Gun ·
+ *  7 Blu sup=Toi-Gye · 8 Rossa=Hwa-Rang · 9 Rossa sup=Choong-Moo ·
+ *  10 Nera=Kwang-Gae (1° dan). The plain white belt is the starting
+ *  grade (no exam) and is intentionally not a selectable target. */
 export const BELTS: Belt[] = [
-  { id: 1, name: 'Gialla', main: '#fbbf24', stripe: null },
-  { id: 2, name: 'Gialla superiore', main: '#fbbf24', stripe: '#22c55e' },
-  { id: 3, name: 'Verde', main: '#22c55e', stripe: null },
-  { id: 4, name: 'Verde-Blu', main: '#22c55e', stripe: '#1d4ed8' },
-  { id: 5, name: 'Blu', main: '#3b82f6', stripe: null },
-  { id: 6, name: 'Blu superiore', main: '#3b82f6', stripe: '#ef4444' },
-  { id: 7, name: 'Rossa', main: '#ef4444', stripe: null },
-  { id: 8, name: 'Nera', main: '#1f2937', stripe: null },
+  { id: 1, name: 'Bianca superiore', main: '#ffffff', stripe: '#fbbf24' },
+  { id: 2, name: 'Gialla', main: '#fbbf24', stripe: null },
+  { id: 3, name: 'Gialla superiore', main: '#fbbf24', stripe: '#22c55e' },
+  { id: 4, name: 'Verde', main: '#22c55e', stripe: null },
+  { id: 5, name: 'Verde-Blu', main: '#22c55e', stripe: '#1d4ed8' },
+  { id: 6, name: 'Blu', main: '#3b82f6', stripe: null },
+  { id: 7, name: 'Blu superiore', main: '#3b82f6', stripe: '#ef4444' },
+  { id: 8, name: 'Rossa', main: '#ef4444', stripe: null },
+  { id: 9, name: 'Rossa superiore', main: '#ef4444', stripe: '#1f2937' },
+  { id: 10, name: 'Nera', main: '#1f2937', stripe: null },
 ];
 
 export const DIFFICULTIES: Record<DifficultyKey, Difficulty> = {
