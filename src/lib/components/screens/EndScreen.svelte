@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { beltById, DIFFICULTIES } from '../../data/belts';
   import { gameStore } from '../../stores/game.svelte';
   import { badgeById } from '../../data/badges';
@@ -30,13 +31,16 @@
   let loading = $state(true);
   let error = $state<string | null>(null);
 
-  $effect(() => {
+  let showReview = $state(false);
+
+  // One-shot submission. onMount runs exactly once per end screen
+  // (the screen is freshly mounted via {#key screen} in App.svelte) and is
+  // NOT reactive, so resetting the game on "Rigioca" cannot re-trigger it.
+  onMount(() => {
     if (isReview) {
       loading = false;
       return;
     }
-    loading = true;
-    error = null;
     submitAndFetch({
       name: gameStore.playerName,
       score: gameStore.score,
@@ -55,7 +59,6 @@
       .finally(() => (loading = false));
   });
 
-  let showReview = $state(false);
   function resetLocal() {
     if (confirm('Vuoi cancellare la classifica locale di questo dispositivo?')) {
       clearLocal();

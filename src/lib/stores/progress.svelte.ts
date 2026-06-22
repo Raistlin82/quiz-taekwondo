@@ -125,7 +125,10 @@ class ProgressStore {
   reviewGraded(key: string, correct: boolean, now = Date.now()): void {
     const card = this.data.srs[key];
     if (!card) {
-      if (!correct) this.data.srs[key] = { box: 1, due: now };
+      if (!correct) {
+        this.data.srs[key] = { box: 1, due: now };
+        this.persist();
+      }
       return;
     }
     if (correct) {

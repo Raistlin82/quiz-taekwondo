@@ -34,7 +34,12 @@
 
 <section class="screen">
   <div class="quiz-head">
-    <button class="restart-btn" onclick={() => gameStore.startQuiz()}>↺ Ricomincia</button>
+    <button
+      class="restart-btn"
+      onclick={() => (gameStore.isReview ? gameStore.startReview() : gameStore.startQuiz())}
+    >
+      ↺ Ricomincia
+    </button>
     {#if gameStore.isReview}<span class="review-flag">🔁 Ripasso</span>{/if}
   </div>
 
