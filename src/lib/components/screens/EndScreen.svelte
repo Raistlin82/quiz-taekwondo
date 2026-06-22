@@ -119,6 +119,20 @@
     <button class="ghost" onclick={() => gameStore.goHome()}>🏠 Home</button>
   </div>
 
+  {#if gameStore.lastPerCat.length > 1}
+    <div class="lb-title">📊 Per categoria</div>
+    <div class="cats">
+      {#each gameStore.lastPerCat as s (s.cat)}
+        {@const p = Math.round((100 * s.correct) / s.total)}
+        <div class="cat-row" class:weak={p < 50}>
+          <span class="cat-name">{s.cat}</span>
+          <div class="cat-bar"><div class="cat-fill" style="width:{p}%"></div></div>
+          <span class="cat-num">{s.correct}/{s.total}</span>
+        </div>
+      {/each}
+    </div>
+  {/if}
+
   {#if !isReview}
     <div class="lb-title">🏁 Classifica</div>
     <Leaderboard {rows} {myId} {online} {loading} {error} />
@@ -256,6 +270,50 @@
     font-size: 1.15rem;
     margin: 20px 0 8px;
     color: var(--ink);
+  }
+  .cats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .cat-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 0.82rem;
+  }
+  .cat-name {
+    flex: 0 0 38%;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cat-bar {
+    flex: 1;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--track);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .cat-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--verde), var(--blu));
+    transition: width 0.6s var(--ease-out);
+  }
+  .cat-row.weak .cat-fill {
+    background: linear-gradient(90deg, #f59e0b, var(--rosso));
+  }
+  .cat-num {
+    flex: 0 0 auto;
+    font-family: 'Baloo 2';
+    font-weight: 800;
+    color: var(--ink-soft);
+    min-width: 38px;
+    text-align: right;
   }
   .lb-clear {
     display: block;

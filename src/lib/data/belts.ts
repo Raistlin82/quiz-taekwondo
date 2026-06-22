@@ -37,8 +37,9 @@ export interface Question {
  *  1 Bianca sup=Chon-Ji · 2 Gialla=Dan-Gun · 3 Gialla sup=Do-San ·
  *  4 Verde=Won-Hyo · 5 Verde-Blu=Yul-Gok · 6 Blu=Joong-Gun ·
  *  7 Blu sup=Toi-Gye · 8 Rossa=Hwa-Rang · 9 Rossa sup=Choong-Moo ·
- *  10 Nera=Kwang-Gae (1° dan). The plain white belt is the starting
- *  grade (no exam) and is intentionally not a selectable target. */
+ *  10 Nera=Kwang-Gae (1° dan) · 11 Nera 2° dan=Eui-Am/Choong-Jang/Juche ·
+ *  12 Nera 3° dan=Sam-Il/Yoo-Sin/Choi-Yong. The plain white belt is the
+ *  starting grade (no exam) and is intentionally not a selectable target. */
 export const BELTS: Belt[] = [
   { id: 1, name: 'Bianca superiore', main: '#ffffff', stripe: '#fbbf24' },
   { id: 2, name: 'Gialla', main: '#fbbf24', stripe: null },
@@ -50,6 +51,8 @@ export const BELTS: Belt[] = [
   { id: 8, name: 'Rossa', main: '#ef4444', stripe: null },
   { id: 9, name: 'Rossa superiore', main: '#ef4444', stripe: '#1f2937' },
   { id: 10, name: 'Nera', main: '#1f2937', stripe: null },
+  { id: 11, name: 'Nera 2° dan', main: '#1f2937', stripe: '#fbbf24' },
+  { id: 12, name: 'Nera 3° dan', main: '#111827', stripe: '#f59e0b' },
 ];
 
 export const DIFFICULTIES: Record<DifficultyKey, Difficulty> = {

@@ -12,6 +12,14 @@ export interface SrsCard {
   due: number; // timestamp when due for review
 }
 
+/** Per-category performance breakdown. */
+export interface CatStat {
+  cat: string;
+  total: number;
+  correct: number;
+}
+type CatTally = Record<string, { total: number; correct: number }>;
+
 interface ProgressData {
   xp: number;
   gamesPlayed: number;
@@ -20,6 +28,7 @@ interface ProgressData {
   studySessions: number;
   badges: string[];
   srs: Record<string, SrsCard>;
+  catStats: CatTally;
 }
 
 export interface GameResult {
@@ -32,6 +41,7 @@ export interface GameResult {
   xpGained: number; // XP accumulated during the game (source of truth)
   missedKeys: string[]; // questions answered wrong (or timed out)
   correctKeys: string[]; // questions answered right
+  perCat: CatStat[]; // per-category breakdown of this game
 }
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -47,6 +57,7 @@ function load(): ProgressData {
     studySessions: 0,
     badges: [],
     srs: {},
+    catStats: {},
   };
   try {
     const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '');
@@ -60,6 +71,10 @@ function load(): ProgressData {
       studySessions: num(saved.studySessions, 0),
       badges: Array.isArray(saved.badges) ? saved.badges.filter((b: unknown) => typeof b === 'string') : [],
       srs: saved.srs && typeof saved.srs === 'object' && !Array.isArray(saved.srs) ? saved.srs : {},
+      catStats:
+        saved.catStats && typeof saved.catStats === 'object' && !Array.isArray(saved.catStats)
+          ? saved.catStats
+          : {},
     };
   } catch {
     return base;
@@ -103,6 +118,12 @@ class ProgressStore {
   }
   get unlockedBadges(): string[] {
     return this.data.badges;
+  }
+  /** All-time per-category stats, weakest accuracy first. */
+  get categoryStats(): CatStat[] {
+    return Object.entries(this.data.catStats)
+      .map(([cat, v]) => ({ cat, total: v.total, correct: v.correct }))
+      .sort((a, b) => a.correct / a.total - b.correct / b.total);
   }
 
   hasBadge(id: string): boolean {
@@ -174,13 +195,21 @@ class ProgressStore {
       if (this.data.srs[k]) this.reviewGradedInternal(k, true, now);
     }
 
+    // Per-category all-time tally.
+    for (const c of r.perCat) {
+      const e = this.data.catStats[c.cat] ?? { total: 0, correct: 0 };
+      e.total += c.total;
+      e.correct += c.correct;
+      this.data.catStats[c.cat] = e;
+    }
+
     // Badges
     this.unlock('first_game', newBadges);
     if (r.maxStreak >= 10) this.unlock('streak10', newBadges);
     if (r.fastCount > 0) this.unlock('speed', newBadges);
     if (r.correct === r.total && r.total > 0) this.unlock('perfect', newBadges);
     if (this.data.xp >= 500) this.unlock('xp500', newBadges);
-    if (r.belt === 10 && r.passed) this.unlock('blackbelt', newBadges);
+    if (r.belt >= 10 && r.passed) this.unlock('blackbelt', newBadges);
 
     const levelAfter = levelFromXp(this.data.xp).level;
     this.persist();

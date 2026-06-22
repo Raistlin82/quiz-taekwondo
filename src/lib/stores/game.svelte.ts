@@ -8,7 +8,7 @@ import { DIFFICULTIES, TIME_PER_Q, type DifficultyKey, type Question } from '../
 import { playSound, vibrate } from '../audio';
 import { burst } from '../confetti';
 import { themeStore } from './theme.svelte';
-import { progressStore, answerXp, type GameResult } from './progress.svelte';
+import { progressStore, answerXp, type GameResult, type CatStat } from './progress.svelte';
 
 export type Screen = 'start' | 'quiz' | 'end' | 'study';
 export type GameMode = 'quiz' | 'review';
@@ -93,6 +93,21 @@ class GameStore {
   }
   get isReview(): boolean {
     return this.mode === 'review';
+  }
+
+  /** Per-category breakdown of the just-played game (weakest first). */
+  get lastPerCat(): CatStat[] {
+    const correct = new Set(this.correctKeys);
+    const acc = new Map<string, { total: number; correct: number }>();
+    for (const q of this.questions) {
+      const e = acc.get(q.cat) ?? { total: 0, correct: 0 };
+      e.total += 1;
+      if (correct.has(qKey(q))) e.correct += 1;
+      acc.set(q.cat, e);
+    }
+    return [...acc.entries()]
+      .map(([cat, v]) => ({ cat, total: v.total, correct: v.correct }))
+      .sort((a, b) => a.correct / a.total - b.correct / b.total);
   }
 
   /** Build a balanced quiz: filter by belt+difficulty, round-robin by category. */
@@ -246,6 +261,7 @@ class GameStore {
         xpGained: this.gameXp,
         missedKeys: this.wrong.map(qKey),
         correctKeys: this.correctKeys,
+        perCat: this.lastPerCat,
       };
       this.summary = progressStore.recordGame(result);
       // The passing-run rain() is fired by EndScreen after the ring fills (U35).
