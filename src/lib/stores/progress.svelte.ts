@@ -50,7 +50,17 @@ function load(): ProgressData {
   };
   try {
     const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '');
-    return { ...base, ...saved, srs: saved.srs ?? {} };
+    if (!saved || typeof saved !== 'object') return base;
+    const num = (v: unknown, d: number) => (Number.isFinite(v) ? (v as number) : d);
+    return {
+      xp: num(saved.xp, 0),
+      gamesPlayed: num(saved.gamesPlayed, 0),
+      bestStreak: num(saved.bestStreak, 0),
+      fastAnswers: num(saved.fastAnswers, 0),
+      studySessions: num(saved.studySessions, 0),
+      badges: Array.isArray(saved.badges) ? saved.badges.filter((b: unknown) => typeof b === 'string') : [],
+      srs: saved.srs && typeof saved.srs === 'object' && !Array.isArray(saved.srs) ? saved.srs : {},
+    };
   } catch {
     return base;
   }
@@ -145,9 +155,10 @@ class ProgressStore {
   }
 
   /** Record a finished quiz; returns newly unlocked badge ids and XP gained. */
-  recordGame(r: GameResult): { newBadges: string[]; xpGained: number } {
+  recordGame(r: GameResult): { newBadges: string[]; xpGained: number; leveledTo: number | null } {
     const now = Date.now();
     const newBadges: string[] = [];
+    const levelBefore = levelFromXp(this.data.xp).level;
 
     // XP is accumulated per-answer by the game store (answerXp) and passed in,
     // so the live counter and the final total always agree.
@@ -171,8 +182,9 @@ class ProgressStore {
     if (this.data.xp >= 500) this.unlock('xp500', newBadges);
     if (r.belt === 8 && r.passed) this.unlock('blackbelt', newBadges);
 
+    const levelAfter = levelFromXp(this.data.xp).level;
     this.persist();
-    return { newBadges, xpGained };
+    return { newBadges, xpGained, leveledTo: levelAfter > levelBefore ? levelAfter : null };
   }
 
   /** Mark a completed study/review session. */

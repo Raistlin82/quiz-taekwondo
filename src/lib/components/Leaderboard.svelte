@@ -25,25 +25,33 @@
 
 <div class="lb">
   {#if loading}
-    <div class="lb-empty">Carico la classifica… ⏳</div>
-  {:else if error}
-    <div class="lb-empty">⚠️ {error}</div>
-  {:else if !rows.length}
-    <div class="lb-empty">Ancora nessun punteggio. Sii il primo! 🥇</div>
+    <div class="lb-empty" role="status">Carico la classifica… ⏳</div>
   {:else}
-    {#if online}
-      <div class="lb-tag">🌍 Classifica online · tutti i giocatori</div>
+    {#if error}
+      <div class="lb-banner" role="status">⚠️ {error}</div>
     {/if}
-    {#each display as { row, rank } (row.id)}
-      {@const belt = beltById(row.belt) ?? UNKNOWN_BELT}
-      <div class="lb-row" class:me={row.id === myId}>
-        <span class="lb-rank">{medals[rank] ?? rank + 1}</span>
-        <BeltDot {belt} />
-        <span class="lb-name">{row.name}</span>
-        <span class="lb-meta">{belt.name} · {row.diff}</span>
-        <span class="lb-pts">{row.score}/{row.total}</span>
+    {#if !rows.length}
+      {#if !error}
+        <div class="lb-empty" role="status">Ancora nessun punteggio. Sii il primo! 🥇</div>
+      {/if}
+    {:else}
+      {#if online}
+        <div class="lb-tag">🌍 Classifica online · tutti i giocatori</div>
+      {/if}
+      <div role="list">
+        {#each display as { row, rank } (row.id)}
+          {@const belt = beltById(row.belt) ?? UNKNOWN_BELT}
+          {@const mine = row.id === myId}
+          <div class="lb-row" class:me={mine} role="listitem" aria-current={mine ? 'true' : undefined}>
+            <span class="lb-rank">{medals[rank] ?? rank + 1}</span>
+            <BeltDot {belt} />
+            <span class="lb-name">{row.name}{#if mine}<span class="sr-only"> (tu)</span>{/if}</span>
+            <span class="lb-meta">{belt.name} · {row.diff}</span>
+            <span class="lb-pts">{row.score}/{row.total}</span>
+          </div>
+        {/each}
       </div>
-    {/each}
+    {/if}
   {/if}
 </div>
 
@@ -52,6 +60,20 @@
     display: flex;
     flex-direction: column;
     gap: 7px;
+  }
+  .lb [role='list'] {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .lb-banner {
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.84rem;
+    color: var(--amber-ink);
+    background: var(--amber-bg-soft);
+    border-radius: 12px;
+    padding: 8px 10px;
   }
   .lb-tag {
     text-align: center;

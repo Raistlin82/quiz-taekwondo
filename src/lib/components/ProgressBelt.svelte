@@ -4,7 +4,7 @@
 
 <div class="beltbar">
   <div class="belt-track"><div class="belt-fill" style="width:{pct}%"></div></div>
-  <div class="knot" style="left:{pct}%">🥋</div>
+  <div class="knot" style="left:clamp(12px, {pct}%, calc(100% - 12px))" aria-hidden="true">🥋</div>
   <div class="belt-pct">Cintura {pct}%</div>
 </div>
 

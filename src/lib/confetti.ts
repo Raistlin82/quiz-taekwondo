@@ -3,6 +3,8 @@
    rain() for a great final result. Self-managing rAF loop.
    ============================================================ */
 
+import { prefersReducedMotion } from './motion';
+
 const COLORS = ['#22c55e', '#3b82f6', '#fbbf24', '#ef4444', '#14b8a6', '#a855f7'];
 
 interface Part {
@@ -39,11 +41,13 @@ function resize(): void {
   canvas.height = window.innerHeight;
 }
 
-function spawn(n: number, big: boolean): void {
+function spawn(n: number, big: boolean, ox?: number, oy?: number): void {
+  const cx = ox ?? window.innerWidth / 2;
+  const cy = oy ?? window.innerHeight / 2 - 60;
   for (let i = 0; i < n; i++) {
     parts.push({
-      x: window.innerWidth / 2 + (Math.random() - 0.5) * 120,
-      y: window.innerHeight / 2 - 60,
+      x: cx + (Math.random() - 0.5) * 120,
+      y: cy,
       vx: (Math.random() - 0.5) * (big ? 14 : 9),
       vy: Math.random() * -1 - (big ? 7 : 5),
       g: 0.22,
@@ -81,14 +85,14 @@ function loop(): void {
   }
 }
 
-export function burst(): void {
-  if (!ensure()) return;
-  spawn(18, false);
+export function burst(origin?: { x: number; y: number }, count = 18): void {
+  if (prefersReducedMotion() || !ensure()) return;
+  spawn(count, false, origin?.x, origin?.y);
   if (!raf) loop();
 }
 
 export function rain(): void {
-  if (!ensure()) return;
+  if (prefersReducedMotion() || !ensure()) return;
   spawn(120, true);
   if (!raf) loop();
 }

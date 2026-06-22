@@ -69,6 +69,11 @@ cannot remove rows.
 - Styling: scoped `<style>` per component using the CSS custom properties (design tokens) defined in
   `src/app.css`. Both themes are driven by those vars + `[data-theme]`; use them rather than hardcoding
   colors so dark mode keeps working.
-- Animations use Svelte transitions (`fly`/`fade`) and respect `prefers-reduced-motion` (handled in `app.css`).
+- Animations use Svelte transitions (`fly`/`fade`). CSS animations respect `prefers-reduced-motion`
+  via the `@media` block in `app.css`; JS/canvas animations (confetti, the ScoreRing count-up) and
+  transition durations gate on `src/lib/motion.ts` (`prefersReducedMotion()` / `motionMs()`) since the
+  CSS rule can't reach them.
 - `src/lib/audio.ts` and `confetti.ts` are guarded utilities (no-op when unsupported); the canvas
-  confetti targets `#confetti` in `App.svelte`.
+  confetti targets `#confetti` in `App.svelte` and accepts an optional origin (the score pill).
+- Accessibility baseline: a global `:focus-visible` ring and `.sr-only` utility live in `app.css`;
+  the quiz uses an `aria-live` region for question changes and `role="status"` feedback.

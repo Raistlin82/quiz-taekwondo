@@ -4,6 +4,7 @@
   import { beltById, BELTS } from '../../data/belts';
   import { gameStore, qKey } from '../../stores/game.svelte';
   import { progressStore } from '../../stores/progress.svelte';
+  import { motionMs } from '../../motion';
 
   // Cards for the selected belt (all levels), grouped by category order.
   const cards = $derived(POOL.filter((q) => q.belt <= gameStore.selBelt));
@@ -41,11 +42,13 @@
 
   <h1 class="study-h">📖 Modalità <span class="grad">Studio</span></h1>
 
-  <div class="belt-row">
+  <div class="belt-row" role="group" aria-label="Cintura da studiare">
     {#each BELTS as b (b.id)}
       <button
+        type="button"
         class="chip"
         class:sel={b.id === gameStore.selBelt}
+        aria-pressed={b.id === gameStore.selBelt}
         style="--c:{b.main}"
         onclick={() => (gameStore.selBelt = b.id)}
       >
@@ -56,16 +59,23 @@
 
   {#if card}
     {#key i}
-      <button class="card" onclick={() => (revealed = !revealed)} in:fly={{ y: 12, duration: 250 }}>
+      <button
+        type="button"
+        class="card"
+        aria-expanded={revealed}
+        aria-label={revealed ? 'Nascondi la risposta' : 'Mostra la risposta'}
+        onclick={() => (revealed = !revealed)}
+        in:fly={{ y: 12, duration: motionMs(250) }}
+      >
         <span class="cat">{card.cat}</span>
         <div class="q">{card.q}</div>
         {#if revealed}
-          <div class="answer" transition:fly={{ y: 8, duration: 180 }}>
+          <div class="answer" role="region" aria-live="polite" transition:fly={{ y: 8, duration: motionMs(180) }}>
             <div class="a-correct">✅ {card.options[card.answer]}</div>
             <div class="a-explain">{card.explain}</div>
           </div>
         {:else}
-          <div class="tap">👆 Tocca per vedere la risposta</div>
+          <div class="tap">👆 Tocca o premi Invio per vedere la risposta</div>
         {/if}
       </button>
     {/key}
@@ -86,12 +96,15 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 8px;
+    padding-right: 92px; /* clear the absolute top-right controls (U23) */
+    min-height: 44px;
   }
   .restart-btn {
     background: var(--surface-2);
     color: var(--ink);
     font-size: 0.82rem;
-    padding: 7px 13px;
+    padding: 9px 14px;
+    min-height: 40px;
     border-radius: 999px;
   }
   .count {
@@ -114,7 +127,8 @@
     font-family: 'Baloo 2';
     font-weight: 700;
     font-size: 0.72rem;
-    padding: 5px 10px;
+    padding: 7px 12px;
+    min-height: 36px;
     border-radius: 999px;
     background: var(--surface);
     border: 2px solid var(--border);
@@ -136,13 +150,15 @@
     cursor: pointer;
     transition: border-color 0.2s;
   }
-  .card:hover {
-    border-color: var(--border-strong);
+  @media (hover: hover) {
+    .card:hover {
+      border-color: var(--border-strong);
+    }
   }
   .cat {
     display: inline-flex;
-    background: linear-gradient(135deg, #dbeafe, #ede9fe);
-    color: var(--blu-d);
+    background: var(--chip-bg);
+    color: var(--chip-ink);
     font-family: 'Baloo 2';
     font-weight: 700;
     padding: 5px 12px;
@@ -169,7 +185,7 @@
   .a-correct {
     font-family: 'Baloo 2';
     font-weight: 800;
-    color: var(--verde-d);
+    color: var(--verde-fb);
     font-size: 1.05rem;
   }
   .a-explain {
@@ -187,11 +203,12 @@
   .nav button {
     flex: 1;
     padding: 12px 8px;
+    min-height: 44px;
     font-size: 0.9rem;
   }
   .nav .flag {
     flex: 0 0 auto;
-    background: linear-gradient(135deg, #fde68a, var(--giallo));
-    color: #7c4a02;
+    background: var(--amber-bg);
+    color: var(--amber-ink);
   }
 </style>

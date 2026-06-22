@@ -5,6 +5,9 @@
   import { badgeById } from '../../data/badges';
   import { submitAndFetch, clearLocal, type ScoreRow } from '../../services/leaderboard';
   import { SHARED } from '../../config';
+  import { rain } from '../../confetti';
+  import { playSound } from '../../audio';
+  import { themeStore } from '../../stores/theme.svelte';
   import ScoreRing from '../ScoreRing.svelte';
   import Leaderboard from '../Leaderboard.svelte';
   import BadgeShelf from '../BadgeShelf.svelte';
@@ -13,6 +16,7 @@
   const beltName = $derived(beltById(gameStore.selBelt)?.name ?? '');
   const isReview = gameStore.isReview;
   const newBadges = $derived(gameStore.summary?.newBadges ?? []);
+  const leveledTo = $derived(gameStore.summary?.leveledTo ?? null);
 
   const verdict = $derived.by(() => {
     if (isReview)
@@ -59,6 +63,20 @@
       .finally(() => (loading = false));
   });
 
+  // Celebration, timed to land as the score ring finishes filling (U35/U31/U38).
+  onMount(() => {
+    const s = gameStore.summary;
+    const shouldRain = (!isReview && pct >= 0.87) || s?.leveledTo != null;
+    let t1: ReturnType<typeof setTimeout> | undefined;
+    let t2: ReturnType<typeof setTimeout> | undefined;
+    if (shouldRain) t1 = setTimeout(() => rain(), 820); // rain() self-guards reduced-motion
+    if (s && s.newBadges.length) t2 = setTimeout(() => playSound('win', themeStore.sound), 500);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  });
+
   function resetLocal() {
     if (confirm('Vuoi cancellare la classifica locale di questo dispositivo?')) {
       clearLocal();
@@ -78,13 +96,17 @@
     <div class="xp-line">+{gameStore.summary.xpGained} XP guadagnati</div>
   {/if}
 
+  {#if leveledTo != null}
+    <div class="level-up" role="status">⬆️ LEVEL UP! Sei al livello {leveledTo}</div>
+  {/if}
+
   {#if newBadges.length}
-    <div class="badge-pop">
+    <div class="badge-pop" role="status">
       🎉 Nuovo traguardo!
       <div class="new-badges">
-        {#each newBadges as id (id)}
+        {#each newBadges as id, n (id)}
           {@const b = badgeById(id)}
-          {#if b}<span class="nb">{b.emoji} {b.name}</span>{/if}
+          {#if b}<span class="nb" style="animation-delay:{n * 0.08}s">{b.emoji} {b.name}</span>{/if}
         {/each}
       </div>
     </div>
@@ -155,16 +177,29 @@
     color: var(--blu-d);
     margin-top: 10px;
   }
+  .level-up {
+    text-align: center;
+    font-family: 'Baloo 2';
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(135deg, var(--verde), var(--blu));
+    border-radius: 16px;
+    padding: 12px;
+    margin-top: 12px;
+    box-shadow: 0 8px 20px -8px rgba(59, 130, 246, 0.6);
+    animation: pop 0.5s var(--ease-spring);
+  }
   .badge-pop {
     text-align: center;
     font-family: 'Baloo 2';
     font-weight: 800;
-    color: #7c4a02;
-    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: var(--amber-ink);
+    background: var(--amber-bg-soft);
     border: 1px solid var(--giallo);
     border-radius: 16px;
     padding: 12px;
     margin-top: 12px;
+    animation: pop 0.5s var(--ease-spring);
   }
   .new-badges {
     display: flex;
@@ -174,12 +209,36 @@
     margin-top: 6px;
   }
   .nb {
-    background: #fff;
+    background: var(--card-solid);
     border-radius: 999px;
     padding: 4px 10px;
     font-size: 0.82rem;
     color: var(--ink);
     box-shadow: 0 3px 8px -3px rgba(0, 0, 0, 0.25);
+    animation: nbIn 0.4s var(--ease-spring) both;
+  }
+  @keyframes pop {
+    0% {
+      transform: scale(0.85);
+      opacity: 0;
+    }
+    60% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  @keyframes nbIn {
+    from {
+      transform: scale(0.5);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
   }
   .row {
     display: flex;
@@ -201,6 +260,8 @@
   .lb-clear {
     display: block;
     margin: 10px auto 0;
+    padding: 8px 12px;
+    min-height: 44px;
     background: transparent;
     color: var(--ink-faint);
     font-size: 0.8rem;

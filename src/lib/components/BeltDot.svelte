@@ -16,7 +16,7 @@
     overflow: hidden;
     display: inline-block;
     flex: 0 0 auto;
-    border: 1px solid rgba(0, 0, 0, 0.12);
+    border: 1px solid var(--belt-brd);
   }
   .str {
     position: absolute;

@@ -3,15 +3,19 @@
   let { timeLeft }: { timeLeft: number } = $props();
   const pct = $derived((timeLeft / TIME_PER_Q) * 100);
   const color = $derived(pct > 50 ? 'var(--verde)' : pct > 25 ? 'var(--giallo)' : 'var(--rosso)');
+  const secs = $derived(Math.ceil(timeLeft));
   const warn = $derived(timeLeft <= 3 && timeLeft > 0);
 </script>
 
-<div class="timer">
-  <div class="timer-track">
+<div class="timer" role="timer" aria-label="Tempo rimasto: {secs} second{secs === 1 ? 'o' : 'i'}">
+  <div class="timer-track" class:warn aria-hidden="true">
     <div class="timer-fill" style="width:{pct}%;background:{color}"></div>
   </div>
-  <div class="timer-num" class:warn>{Math.ceil(timeLeft)}</div>
+  <div class="timer-num" class:warn aria-hidden="true">{secs}</div>
 </div>
+{#if warn}
+  <span class="sr-only" role="alert">Ultimi secondi!</span>
+{/if}
 
 <style>
   .timer {
@@ -27,6 +31,10 @@
     background: var(--track);
     overflow: hidden;
     border: 1px solid var(--border);
+    transition: box-shadow 0.25s;
+  }
+  .timer-track.warn {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--rosso) 40%, transparent);
   }
   .timer-fill {
     height: 100%;
@@ -47,17 +55,20 @@
     border: 1px solid var(--border);
     color: var(--ink);
   }
+  /* low-time cue also works without motion: red text + tinted bg/border */
   .timer-num.warn {
-    color: var(--rosso);
-    animation: pulse 0.5s infinite;
+    color: #fff;
+    background: var(--rosso);
+    border-color: var(--rosso);
+    animation: heartbeat 1s ease-in-out infinite;
   }
-  @keyframes pulse {
+  @keyframes heartbeat {
     0%,
     100% {
       transform: scale(1);
     }
     50% {
-      transform: scale(1.12);
+      transform: scale(1.14);
     }
   }
 </style>

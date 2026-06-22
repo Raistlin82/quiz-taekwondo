@@ -16,12 +16,17 @@
   --teal: #14b8a6;
 
   --radius: 26px;
+  --radius-md: 18px;
   --radius-sm: 16px;
+  --radius-xs: 11px;
   --radius-pill: 999px;
 
   /* Motion */
   --ease-spring: cubic-bezier(0.2, 0.9, 0.3, 1.2);
   --ease-out: cubic-bezier(0.2, 0.9, 0.3, 1);
+
+  /* Shared accent for selectable cards (pickers) */
+  --accent: var(--blu);
 
   color-scheme: light;
 }
@@ -31,7 +36,7 @@
 [data-theme='light'] {
   --ink: #1e293b;
   --ink-soft: #475569;
-  --ink-faint: #94a3b8;
+  --ink-faint: #64748b;
   --card: rgba(255, 255, 255, 0.88);
   --card-solid: #ffffff;
   --surface: #ffffff;
@@ -42,6 +47,20 @@
   --track: #e8edf3;
   --shadow-card: 0 30px 60px -15px rgba(0, 0, 0, 0.45);
   --bg-grad: linear-gradient(135deg, #0e7a52, #0d6b8f 55%, #1e3a8a);
+
+  /* Theme-aware accents (dark variants below) */
+  --amber-bg: linear-gradient(135deg, #fde68a, #fbbf24);
+  --amber-bg-soft: linear-gradient(135deg, #fef3c7, #fde68a);
+  --amber-ink: #6b3f00;
+  --amber-glow: rgba(251, 191, 36, 0.6);
+  --chip-bg: linear-gradient(135deg, #dbeafe, #ede9fe);
+  --chip-ink: #1d4ed8;
+  --verde-fb: #0e6b34; /* AA-contrast green for "correct" feedback text */
+  --rosso-d: #b91c1c;
+  --belt-brd: rgba(0, 0, 0, 0.18);
+  --medal-face: #f1f5f9;
+  --medal-face-2: #e2e8f0;
+  --score-glow: 0 4px 10px -3px rgba(251, 191, 36, 0.6);
   color-scheme: light;
 }
 
@@ -49,7 +68,7 @@
 [data-theme='dark'] {
   --ink: #e8eef6;
   --ink-soft: #a8b6c8;
-  --ink-faint: #6b7a8f;
+  --ink-faint: #8595a8;
   --card: rgba(20, 28, 42, 0.82);
   --card-solid: #131a28;
   --surface: #1a2436;
@@ -60,6 +79,20 @@
   --track: #243049;
   --shadow-card: 0 30px 60px -15px rgba(0, 0, 0, 0.7);
   --bg-grad: linear-gradient(135deg, #06281d, #06303f 55%, #0c1838);
+
+  /* Dark variants of the theme-aware accents */
+  --amber-bg: linear-gradient(135deg, #b4801a, #8a5e0c);
+  --amber-bg-soft: linear-gradient(135deg, #5a4410, #6b4f12);
+  --amber-ink: #ffe7a8;
+  --amber-glow: rgba(251, 191, 36, 0.35);
+  --chip-bg: color-mix(in srgb, var(--blu) 26%, var(--surface));
+  --chip-ink: #bcd4ff;
+  --verde-fb: #6ee7a3;
+  --rosso-d: #fca5a5;
+  --belt-brd: rgba(255, 255, 255, 0.28);
+  --medal-face: #243049;
+  --medal-face-2: #1a2436;
+  --score-glow: 0 4px 14px -3px rgba(251, 191, 36, 0.28);
   color-scheme: dark;
 }
 
@@ -79,12 +112,15 @@ body {
   font-family: 'Nunito', system-ui, sans-serif;
   color: var(--ink);
   background: #0b1220;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  /* grid centering avoids the flexbox overflow bug where a card taller
+     than the viewport pins its top above the scroll origin (U22) */
+  display: grid;
+  place-items: center;
   padding: 18px;
   padding-top: max(18px, env(safe-area-inset-top));
   padding-bottom: max(18px, env(safe-area-inset-bottom));
+  padding-left: max(18px, env(safe-area-inset-left));
+  padding-right: max(18px, env(safe-area-inset-right));
   position: relative;
   overflow-x: hidden;
   min-height: 100dvh;
@@ -93,8 +129,7 @@ body {
 
 #app {
   width: 100%;
-  display: flex;
-  justify-content: center;
+  max-width: 560px;
 }
 
 /* ---- Animated background ---- */
@@ -213,9 +248,6 @@ button:active {
   box-shadow: 0 10px 22px -6px rgba(34, 197, 94, 0.55);
   letter-spacing: 0.4px;
 }
-.cta:hover {
-  filter: brightness(1.06);
-}
 .cta.blu {
   background: linear-gradient(135deg, #60a5fa, var(--blu-d));
   box-shadow: 0 10px 22px -6px rgba(37, 99, 235, 0.5);
@@ -225,8 +257,14 @@ button:active {
   color: var(--ink);
   box-shadow: none;
 }
-.ghost:hover {
-  background: var(--border);
+/* hover effects only on devices that actually hover (avoid sticky touch state) */
+@media (hover: hover) {
+  .cta:hover {
+    filter: brightness(1.06);
+  }
+  .ghost:hover {
+    background: var(--border);
+  }
 }
 
 .label {
@@ -253,15 +291,15 @@ button:active {
 /* ---- Floating controls (top-right cluster) ---- */
 .controls {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
   display: flex;
   gap: 8px;
   z-index: 6;
 }
 .icon-btn {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 14px;
   background: var(--card-solid);
   box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.3);
@@ -270,6 +308,27 @@ button:active {
   align-items: center;
   justify-content: center;
   border: 1px solid var(--border);
+}
+
+/* ---- Accessibility primitives ---- */
+:focus-visible {
+  outline: 3px solid var(--blu);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 canvas#confetti {

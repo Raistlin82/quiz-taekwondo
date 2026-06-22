@@ -3,7 +3,7 @@
   let { value = $bindable() }: { value: number } = $props();
 </script>
 
-<div class="belt-grid">
+<div class="belt-grid" role="group" aria-label="Scegli la cintura d'esame">
   {#each BELTS as b (b.id)}
     <button
       type="button"
@@ -44,12 +44,17 @@
     color: var(--ink-soft);
     line-height: 1.05;
   }
-  .belt-opt:hover {
-    transform: translateY(-2px);
-    border-color: var(--border-strong);
+  @media (hover: hover) {
+    .belt-opt:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-strong);
+    }
+  }
+  .belt-opt:active {
+    transform: translateY(0) scale(0.98);
   }
   .belt-opt.sel {
-    border-color: var(--blu);
+    border-color: var(--accent);
     box-shadow: 0 8px 18px -8px rgba(59, 130, 246, 0.6);
     color: var(--ink);
   }
@@ -59,7 +64,7 @@
     margin-bottom: 6px;
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--belt-brd);
     transition: 0.15s;
   }
   .belt-opt.sel .mini {
@@ -81,5 +86,16 @@
   }
   .belt-opt.sel .tick {
     opacity: 1;
+  }
+  /* clean 4×2 grid on phones instead of a ragged 3+3+2 */
+  @media (max-width: 420px) {
+    .belt-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    .belt-opt {
+      font-size: 0.72rem;
+      line-height: 1.15;
+      min-height: 64px;
+    }
   }
 </style>

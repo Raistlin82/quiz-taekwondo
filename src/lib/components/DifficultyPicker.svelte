@@ -4,13 +4,14 @@
   const items = Object.values(DIFFICULTIES);
 </script>
 
-<div class="diff-grid">
+<div class="diff-grid" role="group" aria-label="Scegli il livello di difficoltà">
   {#each items as d (d.key)}
     <button
       type="button"
       class="diff-opt"
       class:sel={d.key === value}
       aria-pressed={d.key === value}
+      aria-label={`${d.nm}: ${d.ds}`}
       onclick={() => (value = d.key)}
     >
       <div class="em">{d.em}</div>
@@ -38,13 +39,18 @@
       border-color 0.15s,
       box-shadow 0.15s;
   }
-  .diff-opt:hover {
-    transform: translateY(-2px);
-    border-color: var(--border-strong);
+  @media (hover: hover) {
+    .diff-opt:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-strong);
+    }
+  }
+  .diff-opt:active {
+    transform: translateY(0) scale(0.98);
   }
   .diff-opt.sel {
-    border-color: var(--verde);
-    box-shadow: 0 8px 18px -8px rgba(34, 197, 94, 0.6);
+    border-color: var(--accent);
+    box-shadow: 0 8px 18px -8px rgba(59, 130, 246, 0.55);
   }
   .em {
     font-size: 1.5rem;

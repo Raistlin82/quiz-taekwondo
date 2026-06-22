@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { prefersReducedMotion } from '../motion';
+
   interface Props {
     score: number;
     total: number;
@@ -8,17 +10,38 @@
 
   const CIRC = 389.6; // 2πr, r=62
   const pct = $derived(total ? score / total : 0);
-  // Start full, animate to target after mount.
+
+  // Ring sweep: start full, animate to target after mount.
   let offset = $state(CIRC);
+  // Score counts up 0 → score (jumps under reduced motion).
+  let shown = $state(0);
+
   $effect(() => {
     const target = CIRC * (1 - pct);
+    if (prefersReducedMotion()) {
+      offset = target;
+      shown = score;
+      return;
+    }
     const t = setTimeout(() => (offset = target), 60);
-    return () => clearTimeout(t);
+    let raf = 0;
+    const start = performance.now();
+    const dur = 900;
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - start) / dur);
+      shown = Math.round(p * score);
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => {
+      clearTimeout(t);
+      cancelAnimationFrame(raf);
+    };
   });
 </script>
 
 <div class="ring-wrap">
-  <svg width="150" height="150" viewBox="0 0 150 150">
+  <svg width="150" height="150" viewBox="0 0 150 150" role="img" aria-label="Punteggio: {score} su {total}">
     <defs>
       <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0" stop-color="#22c55e" />
@@ -39,7 +62,7 @@
       transform="rotate(-90 75 75)"
       style="transition: stroke-dashoffset 1s cubic-bezier(.2,.9,.3,1)"
     />
-    <text x="75" y="66" text-anchor="middle" font-size="34">{emoji}</text>
+    <text x="75" y="66" text-anchor="middle" font-size="34" aria-hidden="true">{emoji}</text>
     <text
       x="75"
       y="98"
@@ -47,7 +70,8 @@
       font-family="Baloo 2"
       font-weight="800"
       font-size="22"
-      fill="var(--ink)">{score}/{total}</text
+      fill="var(--ink)"
+      aria-hidden="true">{shown}/{total}</text
     >
   </svg>
 </div>

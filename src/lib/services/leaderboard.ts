@@ -40,7 +40,8 @@ const sbHeaders = () => ({
 /* ---- local storage ---- */
 function loadLocal(): ScoreRow[] {
   try {
-    return JSON.parse(localStorage.getItem(LB_KEY) || '[]');
+    const v = JSON.parse(localStorage.getItem(LB_KEY) || '[]');
+    return Array.isArray(v) ? v : [];
   } catch {
     return [];
   }
@@ -66,6 +67,11 @@ const sortRows = (a: ScoreRow, b: ScoreRow) =>
  */
 export async function submitAndFetch(entry: SubmitInput): Promise<LeaderboardResult> {
   if (SHARED) {
+    let posted = false;
+    let myId: string | null = null;
+    let postedRow: ScoreRow | null = null;
+
+    // Step 1: submit. Only a failure HERE should fall back to local storage.
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/scores`, {
         method: 'POST',
@@ -74,21 +80,32 @@ export async function submitAndFetch(entry: SubmitInput): Promise<LeaderboardRes
       });
       if (!res.ok) throw new Error('post failed');
       const ins = await res.json();
-      const myId: string | null = ins?.[0]?.id ?? null;
-
-      const r2 = await fetch(
-        `${SUPABASE_URL}/rest/v1/scores?select=*&order=pct.desc,score.desc,created_at.asc&limit=100`,
-        { headers: sbHeaders() },
-      );
-      if (!r2.ok) throw new Error('get failed');
-      const rows = (await r2.json()) as ScoreRow[];
-      return { rows, myId, online: true };
+      postedRow = (ins?.[0] as ScoreRow) ?? null;
+      myId = postedRow?.id ?? null;
+      posted = true;
     } catch {
-      // fall through to local
+      // POST itself failed → fall through to the local fallback below.
+    }
+
+    // Step 2: the score IS saved server-side. Fetch the board, but a GET
+    // failure must NOT trigger a second (local) write of the same score.
+    if (posted) {
+      try {
+        const r2 = await fetch(
+          `${SUPABASE_URL}/rest/v1/scores?select=*&order=pct.desc,score.desc,created_at.asc&limit=100`,
+          { headers: sbHeaders() },
+        );
+        if (!r2.ok) throw new Error('get failed');
+        const rows = (await r2.json()) as ScoreRow[];
+        return { rows, myId, online: true };
+      } catch {
+        // Submission succeeded; only the board read failed. Show what we have.
+        return { rows: postedRow ? [postedRow] : [], myId, online: true };
+      }
     }
   }
 
-  // local fallback
+  // local fallback (SHARED disabled, or the POST itself failed)
   const board = loadLocal();
   const id = 'L' + Date.now() + Math.random().toString(36).slice(2, 6);
   const row: ScoreRow = { ...entry, id, ts: Date.now() };

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { beltById } from '../../data/belts';
   import { gameStore } from '../../stores/game.svelte';
   import { progressStore } from '../../stores/progress.svelte';
@@ -7,7 +8,24 @@
 
   const belt = $derived(beltById(gameStore.selBelt)!);
   const lvl = $derived(progressStore.level);
-  const due = $derived(progressStore.dueCount());
+
+  // `tick` lets the due count re-evaluate on wall-clock events (a card can
+  // become due while the start screen sits idle past midnight). (B5)
+  let tick = $state(0);
+  const due = $derived.by(() => {
+    void tick;
+    return progressStore.dueCount();
+  });
+
+  onMount(() => {
+    const bump = () => (tick += 1);
+    document.addEventListener('visibilitychange', bump);
+    const id = setInterval(bump, 60_000);
+    return () => {
+      document.removeEventListener('visibilitychange', bump);
+      clearInterval(id);
+    };
+  });
 
   function start() {
     gameStore.startQuiz();
@@ -16,16 +34,21 @@
 
 <section class="screen">
   <div class="belt-hero">
-    <svg class="badge" viewBox="0 0 100 100" aria-label="cintura">
+    <svg
+      class="badge"
+      viewBox="0 0 100 100"
+      role="img"
+      aria-label="Medaglia cintura {belt.name}"
+    >
       <defs>
-        <linearGradient id="gv" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#f1f5f9" />
-          <stop offset="1" stop-color="#e2e8f0" />
+        <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#22c55e" />
+          <stop offset="1" stop-color="#3b82f6" />
         </linearGradient>
       </defs>
-      <circle cx="50" cy="50" r="46" fill="#fff" stroke="#e2e8f0" stroke-width="2" />
-      <circle cx="50" cy="50" r="40" fill="url(#gv)" />
-      <text x="50" y="42" text-anchor="middle" font-size="26">🥋</text>
+      <circle cx="50" cy="50" r="47" fill="url(#rim)" />
+      <circle cx="50" cy="50" r="40" fill="var(--medal-face)" />
+      <text x="50" y="42" text-anchor="middle" font-size="26" aria-hidden="true">🥋</text>
       <rect x="12" y="58" width="76" height="13" rx="3" fill={belt.main} />
       <rect
         x="12"
@@ -69,12 +92,27 @@
 
   <div class="secondary">
     <button class="ghost" onclick={() => gameStore.goStudy()}>📖 Studia</button>
-    <button class="ghost ripasso" class:active={due > 0} disabled={due === 0} onclick={() => gameStore.startReview()}>
+    <button
+      class="ghost ripasso"
+      class:active={due > 0}
+      disabled={due === 0}
+      title={due > 0
+        ? `Ripassa ${due} domand${due === 1 ? 'a' : 'e'} sbagliate`
+        : 'Ripasso non disponibile: nessuna domanda da rivedere'}
+      aria-label={due > 0
+        ? `Ripasso: ${due} domande da rivedere`
+        : 'Ripasso non disponibile: nessuna domanda da rivedere'}
+      onclick={() => gameStore.startReview()}
+    >
       🔁 Ripasso {due > 0 ? `(${due})` : ''}
     </button>
   </div>
 
-  <p class="hint">⏱️ Hai 10 secondi per ogni risposta. Pronto?</p>
+  {#if due > 0}
+    <p class="hint">🔁 Hai {due} domand{due === 1 ? 'a' : 'e'} da ripassare.</p>
+  {:else}
+    <p class="hint">⏱️ Hai 10 secondi per ogni risposta. Pronto?</p>
+  {/if}
 </section>
 
 <style>
@@ -158,7 +196,8 @@
     padding: 13px 16px;
     border: 2px solid var(--border);
     border-radius: 16px;
-    font-size: 1.02rem;
+    /* >=16px prevents iOS Safari from zooming on focus (U29) */
+    font-size: max(16px, 1.02rem);
     font-family: inherit;
     font-weight: 700;
     text-align: center;
@@ -187,11 +226,12 @@
   .secondary button {
     flex: 1;
     padding: 12px;
+    min-height: 44px;
     font-size: 0.95rem;
   }
   .ripasso.active {
-    background: linear-gradient(135deg, #fde68a, var(--giallo));
-    color: #7c4a02;
+    background: var(--amber-bg);
+    color: var(--amber-ink);
   }
   .secondary button:disabled {
     opacity: 0.5;

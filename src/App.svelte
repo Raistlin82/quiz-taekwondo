@@ -2,6 +2,7 @@
   import { fade } from 'svelte/transition';
   import { gameStore } from './lib/stores/game.svelte';
   import { themeStore } from './lib/stores/theme.svelte';
+  import { motionMs } from './lib/motion';
   import StartScreen from './lib/components/screens/StartScreen.svelte';
   import QuizScreen from './lib/components/screens/QuizScreen.svelte';
   import EndScreen from './lib/components/screens/EndScreen.svelte';
@@ -25,7 +26,7 @@
   </div>
 
   {#key gameStore.screen}
-    <div in:fade={{ duration: 250 }}>
+    <div in:fade={{ duration: motionMs(250) }}>
       {#if gameStore.screen === 'start'}
         <StartScreen />
       {:else if gameStore.screen === 'quiz'}

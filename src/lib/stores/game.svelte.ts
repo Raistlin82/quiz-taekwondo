@@ -6,7 +6,7 @@
 import { POOL } from '../data/questions';
 import { DIFFICULTIES, TIME_PER_Q, type DifficultyKey, type Question } from '../data/belts';
 import { playSound, vibrate } from '../audio';
-import { burst, rain } from '../confetti';
+import { burst } from '../confetti';
 import { themeStore } from './theme.svelte';
 import { progressStore, answerXp, type GameResult } from './progress.svelte';
 
@@ -15,6 +15,15 @@ export type GameMode = 'quiz' | 'review';
 
 /** Stable key for a question (used by the SRS queue). */
 export const qKey = (q: Question): string => q.q;
+
+/** Center of the on-screen score pill, so confetti erupts from the score (U37). */
+function scorePillOrigin(): { x: number; y: number } | undefined {
+  if (typeof document === 'undefined') return undefined;
+  const el = document.getElementById('scorePill');
+  if (!el) return undefined;
+  const r = el.getBoundingClientRect();
+  return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+}
 
 const shuffle = <T>(a: T[]): T[] => {
   const x = a.slice();
@@ -35,6 +44,7 @@ function shuffleOptions(q: Question): Question {
 export interface EndSummary {
   newBadges: string[];
   xpGained: number;
+  leveledTo: number | null;
 }
 
 class GameStore {
@@ -139,13 +149,35 @@ class GameStore {
 
   startReview(): void {
     const review = this.buildReview();
-    if (!review.length) return;
+    // Guard the empty case so the button is never a silent no-op (B4).
+    if (!review.length) {
+      this.goHome();
+      return;
+    }
     this.playerName = (this.playerName.trim() || 'Ospite').slice(0, 18);
     this.mode = 'review';
     this.questions = review;
     this.resetCounters();
     this.screen = 'quiz';
     this.beginQuestion();
+  }
+
+  /** Faithful restart of the current session — replays the SAME question set
+   *  rather than rebuilding (which, in review mode, would drop already-graded
+   *  cards from the shrunken due set). Used by "Ricomincia". (B4) */
+  restart(): void {
+    if (this.mode === 'review') {
+      if (!this.questions.length) {
+        this.goHome();
+        return;
+      }
+      this.questions = this.questions.map((q) => shuffleOptions(q));
+      this.resetCounters();
+      this.screen = 'quiz';
+      this.beginQuestion();
+    } else {
+      this.startQuiz();
+    }
   }
 
   private beginQuestion(): void {
@@ -176,7 +208,8 @@ class GameStore {
       this.correctKeys.push(qKey(q));
       playSound('good', themeStore.sound);
       vibrate(30, themeStore.haptics);
-      burst();
+      // burst from the score pill, bigger on streak milestones (U37)
+      burst(scorePillOrigin(), this.streak >= 5 ? 30 : 18);
       // In review mode, grade the SRS card immediately.
       if (this.isReview) progressStore.reviewGraded(qKey(q), true);
     } else {
@@ -201,7 +234,7 @@ class GameStore {
     this.stopTimer();
     if (this.isReview) {
       const newBadges = progressStore.completeStudySession();
-      this.summary = { newBadges, xpGained: 0 };
+      this.summary = { newBadges, xpGained: 0, leveledTo: null };
     } else {
       const result: GameResult = {
         belt: this.selBelt,
@@ -215,7 +248,7 @@ class GameStore {
         correctKeys: this.correctKeys,
       };
       this.summary = progressStore.recordGame(result);
-      if (this.pct >= 0.87) rain();
+      // The passing-run rain() is fired by EndScreen after the ring fills (U35).
     }
     this.screen = 'end';
   }
@@ -231,11 +264,20 @@ class GameStore {
   }
 
   /* ---- timer ---- */
+  private lastTickSec = 0;
   private startTimer(): void {
     this.stopTimer();
     this.timeLeft = TIME_PER_Q;
+    this.lastTickSec = 0;
     this.timerId = setInterval(() => {
       this.timeLeft = Math.max(0, Math.round((this.timeLeft - 0.1) * 10) / 10);
+      // Heartbeat: one tick + soft buzz per second over the final 3 seconds (U32).
+      const sec = Math.ceil(this.timeLeft);
+      if (sec > 0 && sec <= 3 && sec !== this.lastTickSec) {
+        this.lastTickSec = sec;
+        playSound('tick', themeStore.sound);
+        vibrate(15, themeStore.haptics);
+      }
       if (this.timeLeft <= 0) {
         this.stopTimer();
         this.answer(null);
