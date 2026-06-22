@@ -42,8 +42,8 @@
     >
       <defs>
         <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#22c55e" />
-          <stop offset="1" stop-color="#3b82f6" />
+          <stop offset="0" stop-color="#6b8f71" />
+          <stop offset="1" stop-color="#c0432c" />
         </linearGradient>
       </defs>
       <circle cx="50" cy="50" r="47" fill="url(#rim)" />
@@ -150,7 +150,7 @@
     gap: 8px;
   }
   .lvl-badge {
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 800;
     font-size: 0.8rem;
     color: #fff;
@@ -173,14 +173,14 @@
     transition: width 0.5s var(--ease-out);
   }
   .xp-num {
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 700;
     font-size: 0.72rem;
     color: var(--ink-soft);
     flex: 0 0 auto;
   }
   .stat {
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 800;
     font-size: 0.85rem;
     color: var(--ink);
@@ -212,7 +212,7 @@
   .name-box:focus {
     outline: none;
     border-color: var(--blu);
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.18);
+    box-shadow: 0 0 0 4px rgba(192, 67, 44, 0.22);
   }
 
   .cta {

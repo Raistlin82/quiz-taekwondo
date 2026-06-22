@@ -2,7 +2,7 @@
   import { TIME_PER_Q } from '../data/belts';
   let { timeLeft }: { timeLeft: number } = $props();
   const pct = $derived((timeLeft / TIME_PER_Q) * 100);
-  const color = $derived(pct > 50 ? 'var(--verde)' : pct > 25 ? 'var(--giallo)' : 'var(--rosso)');
+  const color = $derived(pct > 50 ? 'var(--verde)' : pct > 25 ? 'var(--giallo)' : 'var(--blu)');
   const secs = $derived(Math.ceil(timeLeft));
   const warn = $derived(timeLeft <= 3 && timeLeft > 0);
 </script>
@@ -34,7 +34,7 @@
     transition: box-shadow 0.25s;
   }
   .timer-track.warn {
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--rosso) 40%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--blu) 45%, transparent);
   }
   .timer-fill {
     height: 100%;
@@ -44,7 +44,7 @@
       background 0.25s;
   }
   .timer-num {
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 800;
     font-size: 1.05rem;
     min-width: 46px;
@@ -57,9 +57,9 @@
   }
   /* low-time cue also works without motion: red text + tinted bg/border */
   .timer-num.warn {
-    color: #fff;
-    background: var(--rosso);
-    border-color: var(--rosso);
+    color: #fff8ee;
+    background: var(--blu);
+    border-color: var(--blu);
     animation: heartbeat 1s ease-in-out infinite;
   }
   @keyframes heartbeat {

@@ -5,7 +5,7 @@
 
 import { prefersReducedMotion } from './motion';
 
-const COLORS = ['#22c55e', '#3b82f6', '#fbbf24', '#ef4444', '#14b8a6', '#a855f7'];
+const COLORS = ['#c0432c', '#c79a3e', '#6b8f71', '#8a5a3c', '#e0a86a', '#5f9e8c'];
 
 interface Part {
   x: number;

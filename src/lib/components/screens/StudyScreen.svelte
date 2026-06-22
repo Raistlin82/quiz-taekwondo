@@ -108,7 +108,7 @@
     border-radius: 999px;
   }
   .count {
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 700;
     color: var(--ink-soft);
     font-size: 0.9rem;
@@ -124,7 +124,7 @@
     justify-content: center;
   }
   .chip {
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 700;
     font-size: 0.72rem;
     padding: 7px 12px;
@@ -159,14 +159,14 @@
     display: inline-flex;
     background: var(--chip-bg);
     color: var(--chip-ink);
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 700;
     padding: 5px 12px;
     border-radius: 999px;
     font-size: 0.78rem;
   }
   .q {
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 700;
     font-size: 1.2rem;
     line-height: 1.3;
@@ -183,7 +183,7 @@
     margin-top: 8px;
   }
   .a-correct {
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 800;
     color: var(--verde-fb);
     font-size: 1.05rem;

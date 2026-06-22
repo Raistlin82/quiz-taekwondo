@@ -38,7 +38,7 @@
       transform 0.12s,
       border-color 0.15s,
       box-shadow 0.15s;
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 700;
     font-size: 0.76rem;
     color: var(--ink-soft);
@@ -55,7 +55,7 @@
   }
   .belt-opt.sel {
     border-color: var(--accent);
-    box-shadow: 0 8px 18px -8px rgba(59, 130, 246, 0.6);
+    box-shadow: 0 8px 18px -8px rgba(192, 67, 44, 0.5);
     color: var(--ink);
   }
   .mini {

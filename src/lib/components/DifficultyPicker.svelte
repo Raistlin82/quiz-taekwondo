@@ -50,13 +50,13 @@
   }
   .diff-opt.sel {
     border-color: var(--accent);
-    box-shadow: 0 8px 18px -8px rgba(59, 130, 246, 0.55);
+    box-shadow: 0 8px 18px -8px rgba(192, 67, 44, 0.45);
   }
   .em {
     font-size: 1.5rem;
   }
   .nm {
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 800;
     font-size: 0.95rem;
     margin-top: 2px;

@@ -49,7 +49,7 @@
     line-height: 1.1;
   }
   .nm {
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 700;
     font-size: 0.68rem;
     color: var(--ink-soft);

@@ -133,7 +133,7 @@
     }
   }
   .review-flag {
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 700;
     font-size: 0.78rem;
     color: var(--amber-ink);
@@ -152,7 +152,7 @@
     position: relative;
   }
   .qnum {
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 700;
     color: var(--ink-soft);
     font-size: 0.92rem;
@@ -162,7 +162,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 700;
     font-size: 0.78rem;
     color: var(--ink);
@@ -181,7 +181,7 @@
     gap: 5px;
     background: var(--amber-bg);
     color: var(--amber-ink);
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 800;
     padding: 5px 12px;
     border-radius: 999px;
@@ -208,7 +208,7 @@
     position: absolute;
     right: 0;
     top: -6px;
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 800;
     font-size: 0.95rem;
     color: var(--blu-d);
@@ -235,7 +235,7 @@
     gap: 7px;
     background: var(--chip-bg);
     color: var(--chip-ink);
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 700;
     padding: 6px 14px;
     border-radius: 999px;
@@ -243,7 +243,7 @@
     margin: 14px 0 2px;
   }
   .question {
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 700;
     font-size: 1.28rem;
     line-height: 1.3;
@@ -275,7 +275,7 @@
     color: var(--rosso-d);
   }
   .feedback .h {
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 800;
     font-size: 1.05rem;
     display: block;

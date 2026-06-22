@@ -66,6 +66,11 @@ cannot remove rows.
 
 ## Conventions
 
+- **Visual identity — "Hanji" (Sumi & Cinnabar):** rice-paper surfaces, sumi-ink text, cinnabar
+  hero/seal accent, celadon for "correct/positive", expressive serif fonts (Fraunces display +
+  Newsreader body, as `--font-display` / `--font-body`). Semantic token mapping: `--verde` = celadon
+  (correct), `--blu` = cinnabar (hero/selected/CTA/focus), `--rosso` = sumi-sepia (wrong). Keep new
+  UI on-theme via the tokens; don't reintroduce the old green→blue glassmorphism.
 - Styling: scoped `<style>` per component using the CSS custom properties (design tokens) defined in
   `src/app.css`. Both themes are driven by those vars + `[data-theme]`; use them rather than hardcoding
   colors so dark mode keeps working.

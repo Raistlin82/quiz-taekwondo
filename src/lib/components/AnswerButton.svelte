@@ -36,7 +36,7 @@
     border-radius: 18px;
     padding: 13px 15px;
     text-align: left;
-    font-family: 'Nunito';
+    font-family: var(--font-body);
     font-weight: 700;
     font-size: 1.02rem;
     color: var(--ink);
@@ -55,7 +55,7 @@
       border-color: var(--blu);
       background: color-mix(in srgb, var(--blu) 8%, var(--surface));
       transform: translateX(4px);
-      box-shadow: 0 6px 16px -8px rgba(59, 130, 246, 0.6);
+      box-shadow: 0 6px 16px -8px rgba(192, 67, 44, 0.5);
     }
     .ans:not(.locked):hover .tag {
       background: var(--blu);
@@ -75,7 +75,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 800;
     color: var(--ink-soft);
     transition: 0.15s;
@@ -106,6 +106,12 @@
   .ans.wrong .tag {
     background: var(--rosso);
     color: #fff;
+  }
+  /* ink-strike on the wrongly chosen answer (Hanji) */
+  .ans.wrong .txt {
+    text-decoration: line-through;
+    text-decoration-color: color-mix(in srgb, var(--rosso) 70%, transparent);
+    text-decoration-thickness: 2px;
   }
   .ans.dim {
     opacity: 0.5;

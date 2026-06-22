@@ -96,10 +96,10 @@
   .lb-row.me {
     border-color: var(--verde);
     background: color-mix(in srgb, var(--verde) 14%, var(--surface));
-    box-shadow: 0 4px 12px -6px rgba(34, 197, 94, 0.6);
+    box-shadow: 0 4px 12px -6px rgba(94, 140, 106, 0.5);
   }
   .lb-rank {
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 800;
     font-size: 1rem;
     min-width: 26px;
@@ -118,7 +118,7 @@
     font-weight: 600;
   }
   .lb-pts {
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 800;
     color: var(--blu-d);
   }

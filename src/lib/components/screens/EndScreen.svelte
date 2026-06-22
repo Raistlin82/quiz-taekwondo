@@ -163,7 +163,7 @@
 
 <style>
   .end-title {
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 800;
     text-align: center;
     font-size: 1.5rem;
@@ -186,26 +186,26 @@
   }
   .xp-line {
     text-align: center;
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 800;
     color: var(--blu-d);
     margin-top: 10px;
   }
   .level-up {
     text-align: center;
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 800;
     color: #fff;
     background: linear-gradient(135deg, var(--verde), var(--blu));
     border-radius: 16px;
     padding: 12px;
     margin-top: 12px;
-    box-shadow: 0 8px 20px -8px rgba(59, 130, 246, 0.6);
+    box-shadow: 0 8px 20px -8px rgba(192, 67, 44, 0.5);
     animation: pop 0.5s var(--ease-spring);
   }
   .badge-pop {
     text-align: center;
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 800;
     color: var(--amber-ink);
     background: var(--amber-bg-soft);
@@ -265,7 +265,7 @@
     font-size: 1.05rem;
   }
   .lb-title {
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 800;
     font-size: 1.15rem;
     margin: 20px 0 8px;
@@ -309,7 +309,7 @@
   }
   .cat-num {
     flex: 0 0 auto;
-    font-family: 'Baloo 2';
+    font-family: var(--font-display);
     font-weight: 800;
     color: var(--ink-soft);
     min-width: 38px;
@@ -323,7 +323,7 @@
     background: transparent;
     color: var(--ink-faint);
     font-size: 0.8rem;
-    font-family: 'Nunito';
+    font-family: var(--font-body);
     font-weight: 700;
     text-decoration: underline;
   }
