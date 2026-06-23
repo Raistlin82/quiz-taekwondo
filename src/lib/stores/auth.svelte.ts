@@ -24,6 +24,31 @@ function redirectTo(): string | undefined {
   return window.location.origin + window.location.pathname;
 }
 
+/** True when the current URL carries a magic-link / OAuth return (PKCE code,
+ *  token hash, or implicit-flow hash). On such a load the code exchange owns
+ *  the session, so we must NOT start a competing anonymous guest session. */
+function urlHasAuthReturn(): boolean {
+  if (typeof window === 'undefined') return false;
+  const { search, hash } = window.location;
+  return /[?&](code|token_hash|error)=/.test(search) || /(access_token|error|type)=/.test(hash);
+}
+
+/** Strip auth params from the URL after the session is established, so a manual
+ *  refresh doesn't try to re-exchange an already-consumed code. */
+function cleanAuthReturnFromUrl(): void {
+  if (typeof window === 'undefined' || !window.history?.replaceState) return;
+  try {
+    const url = new URL(window.location.href);
+    ['code', 'token_hash', 'type', 'error', 'error_description'].forEach((k) =>
+      url.searchParams.delete(k),
+    );
+    url.hash = '';
+    window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+  } catch {
+    /* ignore */
+  }
+}
+
 class AuthStore {
   user = $state<User | null>(null);
   /** True once init() has settled (so the UI can avoid flicker). */
@@ -76,16 +101,27 @@ class AuthStore {
       return;
     }
     try {
-      const { data } = await supabase.auth.getSession();
-      this.applyUser(data.session?.user ?? null);
+      const authReturn = urlHasAuthReturn();
+      // Subscribe FIRST so the SIGNED_IN fired by the magic-link code exchange
+      // is caught even if it resolves after getSession().
       const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
         this.applyUser(session?.user ?? null);
         // A returning magic-link login confirms the "saved" state.
         if (this.isLoggedIn && this.status !== 'idle') this.status = 'idle';
       });
       this.authSub = sub.subscription;
-      // No session yet → start an anonymous (guest) one so scores get a stable id.
-      if (!this.user) {
+
+      const { data } = await supabase.auth.getSession();
+      this.applyUser(data.session?.user ?? null);
+
+      if (authReturn) {
+        // Coming back from a magic link: the code exchange owns this load.
+        // Do NOT start a competing guest session (that was masking the login
+        // until a manual refresh); just tidy the URL.
+        cleanAuthReturnFromUrl();
+      } else if (!this.user) {
+        // Fresh visit, no session → start an anonymous (guest) one so scores
+        // and progress get a stable id.
         const { data: anon } = await supabase.auth.signInAnonymously();
         this.applyUser(anon.user ?? null);
       }
