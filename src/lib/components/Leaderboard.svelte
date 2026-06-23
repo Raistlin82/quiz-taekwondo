@@ -94,9 +94,9 @@
     font-size: 0.9rem;
   }
   .lb-row.me {
-    border-color: var(--verde);
-    background: color-mix(in srgb, var(--verde) 14%, var(--surface));
-    box-shadow: 0 4px 12px -6px rgba(94, 140, 106, 0.5);
+    border-color: var(--primary);
+    background: var(--primary-soft);
+    box-shadow: 0 4px 12px -6px color-mix(in srgb, var(--primary) 45%, transparent);
   }
   .lb-rank {
     font-family: var(--font-display);

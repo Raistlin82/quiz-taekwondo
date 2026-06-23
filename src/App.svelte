@@ -10,9 +10,6 @@
 </script>
 
 <div class="bg"></div>
-<div class="blob b1"></div>
-<div class="blob b2"></div>
-<div class="blob b3"></div>
 <canvas id="confetti"></canvas>
 
 <div class="app">

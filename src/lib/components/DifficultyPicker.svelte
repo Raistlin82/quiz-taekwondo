@@ -50,7 +50,8 @@
   }
   .diff-opt.sel {
     border-color: var(--accent);
-    box-shadow: 0 8px 18px -8px rgba(192, 67, 44, 0.45);
+    background: var(--primary-soft);
+    box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--primary) 45%, transparent);
   }
   .em {
     font-size: 1.5rem;

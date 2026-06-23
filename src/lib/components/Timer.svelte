@@ -2,9 +2,10 @@
   import { TIME_PER_Q } from '../data/belts';
   let { timeLeft }: { timeLeft: number } = $props();
   const pct = $derived((timeLeft / TIME_PER_Q) * 100);
-  const color = $derived(pct > 50 ? 'var(--verde)' : pct > 25 ? 'var(--giallo)' : 'var(--blu)');
+  // DOJANG: primary while there's time, danger under 5s.
+  const color = $derived(timeLeft <= 5 ? 'var(--danger)' : 'var(--primary)');
   const secs = $derived(Math.ceil(timeLeft));
-  const warn = $derived(timeLeft <= 3 && timeLeft > 0);
+  const warn = $derived(timeLeft <= 5 && timeLeft > 0);
 </script>
 
 <div class="timer" role="timer" aria-label="Tempo rimasto: {secs} second{secs === 1 ? 'o' : 'i'}">
@@ -34,7 +35,7 @@
     transition: box-shadow 0.25s;
   }
   .timer-track.warn {
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--blu) 45%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 45%, transparent);
   }
   .timer-fill {
     height: 100%;
@@ -57,9 +58,9 @@
   }
   /* low-time cue also works without motion: red text + tinted bg/border */
   .timer-num.warn {
-    color: #fff8ee;
-    background: var(--blu);
-    border-color: var(--blu);
+    color: #fff;
+    background: var(--danger);
+    border-color: var(--danger);
     animation: heartbeat 1s ease-in-out infinite;
   }
   @keyframes heartbeat {

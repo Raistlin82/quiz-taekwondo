@@ -140,7 +140,7 @@
   .email-box:focus {
     outline: none;
     border-color: var(--blu);
-    box-shadow: 0 0 0 4px rgba(192, 67, 44, 0.22);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent);
   }
   .send {
     flex: 0 0 auto;

@@ -204,7 +204,7 @@
     border-radius: 16px;
     padding: 12px;
     margin-top: 12px;
-    box-shadow: 0 8px 20px -8px rgba(192, 67, 44, 0.5);
+    box-shadow: 0 12px 24px -10px color-mix(in srgb, var(--primary) 50%, transparent);
     animation: pop 0.5s var(--ease-spring);
   }
   .badge-pop {
@@ -309,7 +309,7 @@
     transition: width 0.6s var(--ease-out);
   }
   .cat-row.weak .cat-fill {
-    background: linear-gradient(90deg, #f59e0b, var(--rosso));
+    background: linear-gradient(90deg, var(--accent-warm), var(--danger));
   }
   .cat-num {
     flex: 0 0 auto;

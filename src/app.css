@@ -1,37 +1,27 @@
 /* ============================================================
    Design tokens + base styles for Quiz Taekwon-Do
-   Light + dark themes via [data-theme]. Glassmorphism identity
-   preserved from the original single-file app.
+   Identity: "DOJANG" — athletic / sports-dashboard.
+   Light + dark themes via [data-theme]. Components use the
+   semantic vars below (never hardcoded colours) so both themes
+   work without duplicating markup. Legacy token names are kept
+   as aliases pointing at the new palette.
    ============================================================ */
 
 :root {
-  /* ---- Hanji palette ("Sumi & Cinnabar") ----
-     celadon = positive/correct · cinnabar = hero/selected/CTA · ink = wrong */
-  --verde: #5e8c6a; /* celadon (semantic: correct/positive) */
-  --verde-d: #436a4d;
-  --blu: #c0432c; /* cinnabar (semantic: hero accent / selected / links) */
-  --blu-d: #9c3320;
-  --giallo: #c79a3e; /* ochre (score) */
-  --rosso: #8a5a3c; /* sumi-sepia ink (semantic: wrong) */
-  --viola: #6b6f8f;
-  --teal: #5f9e8c;
+  /* Fonts */
+  --font-display: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --font-body: 'DM Sans', system-ui, -apple-system, sans-serif;
 
-  /* Fonts: expressive serif display + refined serif body */
-  --font-display: 'Fraunces', 'Georgia', serif;
-  --font-body: 'Newsreader', 'Georgia', serif;
-
-  --radius: 8px;
-  --radius-md: 6px;
-  --radius-sm: 6px;
-  --radius-xs: 5px;
+  /* Radii */
+  --radius: 14px; /* cards */
+  --radius-md: 16px; /* buttons */
+  --radius-sm: 12px;
+  --radius-xs: 10px;
   --radius-pill: 999px;
 
   /* Motion */
   --ease-spring: cubic-bezier(0.2, 0.9, 0.3, 1.2);
   --ease-out: cubic-bezier(0.2, 0.9, 0.3, 1);
-
-  /* Shared accent for selectable cards (pickers) */
-  --accent: var(--blu);
 
   color-scheme: light;
 }
@@ -39,70 +29,113 @@
 /* ---- Light theme (default) ---- */
 :root,
 [data-theme='light'] {
-  --ink: #211b14; /* sumi ink */
-  --ink-soft: #564a3a;
-  --ink-faint: #8a7c66;
-  --card: #f6efe0; /* washi paper (opaque) */
-  --card-solid: #faf4e7;
-  --surface: #fbf6ea;
-  --surface-2: #f0e7d4;
-  --border: #ddd0b6;
-  --border-strong: #c3b291;
-  --glass-brd: #d8cbb0;
-  --track: #e7dcc4;
-  --shadow-card: 0 24px 50px -18px rgba(60, 42, 20, 0.4);
-  --bg-grad: linear-gradient(155deg, #efe6d2, #e6dabf 60%, #ddcfb0);
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --primary: #2563eb;
+  --primary-soft: #eff4ff;
+  --primary-d: #1d4ed8;
+  --success: #16a34a;
+  --success-soft: #ecfdf3;
+  --success-d: #15803d;
+  --danger: #dc2626;
+  --danger-d: #b91c1c;
+  --accent-warm: #f59e0b;
+  --warm-soft: #fef3c7;
 
-  /* Theme-aware accents (dark variants below) */
-  --amber-bg: linear-gradient(135deg, #dcc17e, #c79a3e);
-  --amber-bg-soft: linear-gradient(135deg, #ece0bd, #dcc17e);
-  --amber-ink: #5c4413;
-  --amber-glow: rgba(199, 154, 62, 0.5);
-  --chip-bg: linear-gradient(135deg, #e7ddc7, #ded0b3);
-  --chip-ink: #7a4030; /* cinnabar-ink */
-  --verde-fb: #3a6043; /* AA celadon for "correct" feedback text */
-  --rosso-d: #8a3a1f; /* deep cinnabar-rust for error text */
-  --belt-brd: rgba(33, 27, 20, 0.28);
-  --medal-face: #f3ead6;
-  --medal-face-2: #e6d9bc;
-  --score-glow: 0 4px 10px -4px rgba(199, 154, 62, 0.5);
+  --shadow-card: 0 12px 40px -16px rgba(15, 23, 42, 0.18);
+  --shadow-primary: 0 12px 24px -10px var(--primary);
+
+  /* ---- Legacy aliases → new palette (keep components working) ---- */
+  --ink: var(--text);
+  --ink-soft: var(--text-muted);
+  --ink-faint: #94a3b8;
+  --card: var(--surface);
+  --card-solid: var(--surface);
+  --surface-2: var(--bg);
+  --border-strong: #cbd5e1;
+  --glass-brd: var(--border);
+  --track: #e2e8f0;
+  --bg-grad: var(--bg);
+  --verde: var(--success);
+  --verde-d: var(--success-d);
+  --verde-fb: var(--success-d);
+  --blu: var(--primary);
+  --blu-d: var(--primary-d);
+  --rosso: var(--danger);
+  --rosso-d: var(--danger-d);
+  --giallo: var(--accent-warm);
+  --teal: #0ea5e9;
+  --viola: #6366f1;
+  --accent: var(--primary);
+  --amber-bg: var(--warm-soft);
+  --amber-bg-soft: var(--warm-soft);
+  --amber-ink: #92400e;
+  --amber-glow: rgba(245, 158, 11, 0.4);
+  --chip-bg: var(--primary-soft);
+  --chip-ink: var(--primary);
+  --belt-brd: rgba(15, 23, 42, 0.18);
+  --medal-face: #ffffff;
+  --medal-face-2: #eff4ff;
+  --score-glow: 0 4px 10px -4px rgba(37, 99, 235, 0.4);
   color-scheme: light;
 }
 
 /* ---- Dark theme ---- */
 [data-theme='dark'] {
-  --verde: #7faf88; /* brighter celadon on dark */
-  --verde-d: #9ec8a6;
-  --blu: #e0603f; /* brighter cinnabar on dark */
-  --blu-d: #f08a6a;
-  --teal: #79b8a6;
-  --ink: #ece2cf; /* warm cream ink */
-  --ink-soft: #b6a98f;
-  --ink-faint: #8a7d66;
-  --card: #211c16; /* sumi ink-wash paper */
-  --card-solid: #1a160f;
-  --surface: #231d16;
-  --surface-2: #1b160f;
-  --border: #3d3325;
-  --border-strong: #574931;
-  --glass-brd: #43382880;
-  --track: #2c2418;
-  --shadow-card: 0 30px 60px -18px rgba(0, 0, 0, 0.7);
-  --bg-grad: linear-gradient(155deg, #1a150f, #15110c 60%, #100d09);
+  --bg: #0b0f14;
+  --surface: #151b23;
+  --border: #243040;
+  --text: #e8edf4;
+  --text-muted: #94a3b8;
+  --primary: #3b82f6;
+  --primary-soft: rgba(59, 130, 246, 0.14);
+  --primary-d: #60a5fa;
+  --success: #22c55e;
+  --success-soft: rgba(34, 197, 94, 0.12);
+  --success-d: #4ade80;
+  --danger: #f87171;
+  --danger-d: #fca5a5;
+  --accent-warm: #fbbf24;
+  --warm-soft: rgba(251, 191, 36, 0.14);
 
-  /* Dark variants of the theme-aware accents */
-  --amber-bg: linear-gradient(135deg, #a07d2e, #7a5d1c);
-  --amber-bg-soft: linear-gradient(135deg, #4a3a18, #5c4720);
-  --amber-ink: #f0dca6;
-  --amber-glow: rgba(199, 154, 62, 0.3);
-  --chip-bg: color-mix(in srgb, var(--blu) 24%, var(--surface));
-  --chip-ink: #f0c0a8;
-  --verde-fb: #9ad0a6;
-  --rosso-d: #e8a07a;
-  --belt-brd: rgba(236, 226, 207, 0.3);
-  --medal-face: #2a2318;
-  --medal-face-2: #1b160f;
-  --score-glow: 0 4px 14px -4px rgba(199, 154, 62, 0.28);
+  --shadow-card: 0 30px 60px -22px rgba(0, 0, 0, 0.7);
+  --shadow-primary: 0 12px 26px -10px rgba(59, 130, 246, 0.55);
+
+  /* ---- Legacy aliases → new palette ---- */
+  --ink: var(--text);
+  --ink-soft: var(--text-muted);
+  --ink-faint: #64748b;
+  --card: var(--surface);
+  --card-solid: #1b222c;
+  --surface-2: #1b222c;
+  --border-strong: #33415a;
+  --glass-brd: var(--border);
+  --track: #1f2937;
+  --bg-grad: var(--bg);
+  --verde: var(--success);
+  --verde-d: var(--success-d);
+  --verde-fb: var(--success-d);
+  --blu: var(--primary);
+  --blu-d: var(--primary-d);
+  --rosso: var(--danger);
+  --rosso-d: var(--danger-d);
+  --giallo: var(--accent-warm);
+  --teal: #38bdf8;
+  --viola: #818cf8;
+  --accent: var(--primary);
+  --amber-bg: var(--warm-soft);
+  --amber-bg-soft: var(--warm-soft);
+  --amber-ink: #fbbf24;
+  --amber-glow: rgba(251, 191, 36, 0.3);
+  --chip-bg: var(--primary-soft);
+  --chip-ink: var(--primary-d);
+  --belt-brd: rgba(232, 237, 244, 0.3);
+  --medal-face: #1b222c;
+  --medal-face-2: #11161d;
+  --score-glow: 0 4px 14px -4px rgba(59, 130, 246, 0.35);
   color-scheme: dark;
 }
 
@@ -119,9 +152,9 @@ html {
   min-height: 100dvh;
 }
 body {
-  font-family: var(--font-body), Georgia, serif;
-  color: var(--ink);
-  background: #15110c;
+  font-family: var(--font-body), system-ui, sans-serif;
+  color: var(--text);
+  background: var(--bg);
   /* grid centering avoids the flexbox overflow bug where a card taller
      than the viewport pins its top above the scroll origin (U22) */
   display: grid;
@@ -135,6 +168,7 @@ body {
   overflow-x: hidden;
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
+  transition: background 0.3s ease;
 }
 
 #app {
@@ -142,78 +176,28 @@ body {
   max-width: 560px;
 }
 
-/* ---- Animated background ---- */
+/* ---- Flat background (no full-page gradient in the DOJANG look) ---- */
 .bg {
   position: fixed;
   inset: 0;
   z-index: -2;
-  background: var(--bg-grad);
-  transition: background 0.5s ease;
+  background: var(--bg);
+  transition: background 0.3s ease;
 }
 .blob {
-  position: fixed;
-  z-index: -1;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.22;
-  animation: float 22s ease-in-out infinite;
-}
-[data-theme='dark'] .blob {
-  opacity: 0.16;
-}
-.blob.b1 {
-  width: 46vmax;
-  height: 46vmax;
-  background: #6b8f71; /* celadon wash */
-  top: -14vmax;
-  left: -12vmax;
-}
-.blob.b2 {
-  width: 40vmax;
-  height: 40vmax;
-  background: #c0432c; /* cinnabar wash */
-  bottom: -16vmax;
-  right: -10vmax;
-  animation-delay: -5s;
-}
-.blob.b3 {
-  width: 30vmax;
-  height: 30vmax;
-  background: #c79a3e; /* ochre wash */
-  top: 30%;
-  right: 20%;
-  animation-delay: -9s;
-  opacity: 0.18;
-}
-@keyframes float {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(4vmax, -3vmax) scale(1.08);
-  }
+  display: none;
 }
 
 /* ---- App card ---- */
 .app {
   width: 100%;
   max-width: 560px;
-  background: var(--card); /* opaque washi — no glass blur */
-  border: 1px solid var(--glass-brd);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-card);
-  padding: 28px 26px 30px;
+  padding: 24px 22px 26px;
   position: relative;
-}
-/* hand-inked hairline frame inside the paper edge */
-.app::before {
-  content: '';
-  position: absolute;
-  inset: 7px;
-  border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent);
-  border-radius: calc(var(--radius) - 5px);
-  pointer-events: none;
 }
 .app-footer {
   margin-top: 22px;
@@ -221,40 +205,27 @@ body {
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.2px;
-  color: var(--ink-faint);
+  color: var(--text-muted);
 }
 
 /* ---- Typography ---- */
 h1 {
-  font-family: var(--font-display), cursive;
-  font-weight: 800;
-  font-size: 1.55rem;
-  line-height: 1.12;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1.1;
   text-align: center;
-  letter-spacing: 0.3px;
+  letter-spacing: -0.5px;
+  color: var(--text);
 }
 .grad {
-  background: linear-gradient(90deg, var(--blu), var(--teal) 55%, var(--blu));
-  background-size: 300% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: gradShift 9s ease-in-out infinite;
-}
-@keyframes gradShift {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
+  color: var(--primary);
 }
 .sub {
   text-align: center;
-  color: var(--ink-soft);
+  color: var(--text-muted);
   margin-top: 7px;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.92rem;
 }
 
@@ -262,35 +233,37 @@ h1 {
 button {
   cursor: pointer;
   border: none;
-  font-family: var(--font-display), serif;
-  font-weight: 700;
+  font-family: var(--font-display), sans-serif;
+  font-weight: 600;
   border-radius: var(--radius-md);
   transition:
     transform 0.1s,
     box-shadow 0.2s,
     filter 0.2s,
     background 0.15s;
-  color: var(--ink);
+  color: var(--text);
 }
 button:active {
-  transform: translateY(2px) scale(0.99);
+  transform: translateY(1px) scale(0.99);
 }
 .cta {
   width: 100%;
   padding: 16px;
-  font-size: 1.2rem;
-  color: #fff8ee;
-  background: linear-gradient(135deg, var(--blu), var(--blu-d));
-  box-shadow: 0 10px 22px -8px rgba(160, 52, 32, 0.5);
-  letter-spacing: 0.4px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: #fff;
+  background: var(--primary);
+  box-shadow: var(--shadow-primary);
 }
 .cta.blu {
-  background: linear-gradient(135deg, var(--verde), var(--verde-d));
-  box-shadow: 0 10px 22px -8px rgba(67, 106, 77, 0.5);
+  background: var(--success);
+  box-shadow: 0 12px 24px -10px var(--success);
 }
 .ghost {
-  background: var(--surface-2);
-  color: var(--ink);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
   box-shadow: none;
 }
 /* hover effects only on devices that actually hover (avoid sticky touch state) */
@@ -299,14 +272,15 @@ button:active {
     filter: brightness(1.06);
   }
   .ghost:hover {
-    background: var(--border);
+    background: var(--bg);
+    border-color: var(--border-strong);
   }
 }
 
 .label {
   font-family: var(--font-display);
-  font-weight: 700;
-  color: var(--ink);
+  font-weight: 600;
+  color: var(--text);
   font-size: 0.95rem;
   margin: 16px 0 8px;
   display: flex;
@@ -315,10 +289,10 @@ button:active {
 }
 .hint {
   font-size: 0.8rem;
-  color: var(--ink-soft);
+  color: var(--text-muted);
   text-align: center;
   margin-top: 12px;
-  font-weight: 600;
+  font-weight: 500;
 }
 .hidden {
   display: none !important;
@@ -336,9 +310,9 @@ button:active {
 .icon-btn {
   width: 44px;
   height: 44px;
-  border-radius: 14px;
-  background: var(--card-solid);
-  box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.3);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-shadow: 0 4px 12px -6px rgba(15, 23, 42, 0.2);
   font-size: 1.15rem;
   display: flex;
   align-items: center;
@@ -348,7 +322,7 @@ button:active {
 
 /* ---- Accessibility primitives ---- */
 :focus-visible {
-  outline: 3px solid var(--blu);
+  outline: 3px solid var(--primary);
   outline-offset: 2px;
   border-radius: 12px;
 }
@@ -374,27 +348,12 @@ canvas#confetti {
   z-index: 50;
 }
 
-/* Subtle film-grain overlay for premium depth/texture (very low opacity). */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  pointer-events: none;
-  opacity: 0.045;
-  mix-blend-mode: soft-light;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-[data-theme='dark'] body::after {
-  opacity: 0.07;
-}
-
 @media (max-width: 420px) {
   h1 {
     font-size: 1.3rem;
   }
   .app {
-    padding: 22px 15px 24px;
+    padding: 20px 14px 22px;
   }
 }
 
@@ -405,8 +364,5 @@ body::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-  }
-  .blob {
-    animation: none;
   }
 }

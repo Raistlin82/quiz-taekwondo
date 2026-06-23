@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { beltById } from '../../data/belts';
   import { gameStore } from '../../stores/game.svelte';
   import { progressStore } from '../../stores/progress.svelte';
   import { authStore } from '../../stores/auth.svelte';
@@ -8,7 +7,6 @@
   import DifficultyPicker from '../DifficultyPicker.svelte';
   import AuthBar from '../AuthBar.svelte';
 
-  const belt = $derived(beltById(gameStore.selBelt)!);
   const lvl = $derived(progressStore.level);
 
   // Prefill the player name from the signed-in account (only while the user
@@ -42,37 +40,13 @@
 </script>
 
 <section class="screen">
-  <div class="belt-hero">
-    <svg
-      class="badge"
-      viewBox="0 0 100 100"
-      role="img"
-      aria-label="Medaglia cintura {belt.name}"
-    >
-      <defs>
-        <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#6b8f71" />
-          <stop offset="1" stop-color="#c0432c" />
-        </linearGradient>
-      </defs>
-      <circle cx="50" cy="50" r="47" fill="url(#rim)" />
-      <circle cx="50" cy="50" r="40" fill="var(--medal-face)" />
-      <text x="50" y="42" text-anchor="middle" font-size="26" aria-hidden="true">🥋</text>
-      <rect x="12" y="58" width="76" height="13" rx="3" fill={belt.main} />
-      <rect
-        x="12"
-        y="61.5"
-        width="76"
-        height="5"
-        rx="2"
-        fill={belt.stripe ?? belt.main}
-        opacity={belt.stripe ? 1 : 0}
-      />
-    </svg>
-  </div>
+  <header class="brand">
+    <span class="logo" aria-hidden="true">🥋</span>
+    <span class="brand-name">Quiz Taekwon-Do</span>
+  </header>
 
-  <h1>Quiz <span class="grad">Esame Taekwon-Do</span></h1>
-  <p class="sub">Scegli la cintura e il livello, poi vai! 🥋</p>
+  <h1 class="hero-title">Pronto per l'esame?</h1>
+  <p class="hero-sub">Scegli la cintura e il livello, poi vai. 🥋</p>
 
   <AuthBar />
 
@@ -127,32 +101,52 @@
 </section>
 
 <style>
-  .belt-hero {
+  .brand {
     display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    background: var(--text);
+    display: flex;
+    align-items: center;
     justify-content: center;
-    margin: 2px 0;
+    font-size: 1.15rem;
+    flex: 0 0 auto;
   }
-  .badge {
-    width: 90px;
-    height: 90px;
-    filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.25));
-    animation: bob 3s ease-in-out infinite;
+  .brand-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: -0.3px;
+    color: var(--text);
   }
-  @keyframes bob {
-    0%,
-    100% {
-      transform: translateY(0) rotate(-2deg);
-    }
-    50% {
-      transform: translateY(-6px) rotate(2deg);
-    }
+  .hero-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.9rem;
+    line-height: 1.08;
+    letter-spacing: -0.8px;
+    text-align: left;
+    color: var(--text);
+    margin-top: 18px;
+  }
+  .hero-sub {
+    text-align: left;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-weight: 500;
+    font-size: 0.95rem;
   }
 
   .player-strip {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-top: 14px;
+    margin-top: 16px;
   }
   .lvl {
     flex: 1;
@@ -223,7 +217,7 @@
   .name-box:focus {
     outline: none;
     border-color: var(--blu);
-    box-shadow: 0 0 0 4px rgba(192, 67, 44, 0.22);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent);
   }
 
   .cta {

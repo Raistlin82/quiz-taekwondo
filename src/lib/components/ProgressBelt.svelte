@@ -29,7 +29,7 @@
   .belt-fill {
     height: 100%;
     border-radius: 999px;
-    background: linear-gradient(90deg, var(--verde), #14b8a6 55%, var(--blu));
+    background: linear-gradient(90deg, var(--success), var(--primary));
     transition: width 0.5s cubic-bezier(0.2, 0.9, 0.3, 1);
     box-shadow: inset 0 -3px 6px rgba(0, 0, 0, 0.12);
   }

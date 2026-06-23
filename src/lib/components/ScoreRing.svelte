@@ -44,8 +44,8 @@
   <svg width="150" height="150" viewBox="0 0 150 150" role="img" aria-label="Punteggio: {score} su {total}">
     <defs>
       <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#22c55e" />
-        <stop offset="1" stop-color="#3b82f6" />
+        <stop offset="0" stop-color="var(--success)" />
+        <stop offset="1" stop-color="var(--primary)" />
       </linearGradient>
     </defs>
     <circle cx="75" cy="75" r="62" fill="none" stroke="var(--track)" stroke-width="14" />
@@ -67,8 +67,8 @@
       x="75"
       y="98"
       text-anchor="middle"
-      font-family="Baloo 2"
-      font-weight="800"
+      font-family="Space Grotesk"
+      font-weight="700"
       font-size="22"
       fill="var(--ink)"
       aria-hidden="true">{shown}/{total}</text

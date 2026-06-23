@@ -55,7 +55,8 @@
   }
   .belt-opt.sel {
     border-color: var(--accent);
-    box-shadow: 0 8px 18px -8px rgba(192, 67, 44, 0.5);
+    background: var(--primary-soft);
+    box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--primary) 45%, transparent);
     color: var(--ink);
   }
   .mini {

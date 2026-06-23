@@ -41,7 +41,7 @@ class ThemeStore {
   apply(): void {
     document.documentElement.setAttribute('data-theme', this.theme);
     const meta = document.querySelector('meta[name="theme-color"]');
-    meta?.setAttribute('content', this.theme === 'dark' ? '#06303f' : '#0d6b8f');
+    meta?.setAttribute('content', this.theme === 'dark' ? '#0b0f14' : '#f7f8fa');
   }
 
   toggleTheme(): void {

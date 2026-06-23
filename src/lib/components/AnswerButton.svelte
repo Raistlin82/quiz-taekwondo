@@ -33,7 +33,7 @@
     width: 100%;
     background: var(--surface);
     border: 2px solid var(--border);
-    border-radius: 18px;
+    border-radius: 14px;
     padding: 13px 15px;
     text-align: left;
     font-family: var(--font-body);
@@ -55,7 +55,7 @@
       border-color: var(--blu);
       background: color-mix(in srgb, var(--blu) 8%, var(--surface));
       transform: translateX(4px);
-      box-shadow: 0 6px 16px -8px rgba(192, 67, 44, 0.5);
+      box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--primary) 45%, transparent);
     }
     .ans:not(.locked):hover .tag {
       background: var(--blu);
