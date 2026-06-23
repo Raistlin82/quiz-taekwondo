@@ -69,6 +69,7 @@ class GameStore {
   lastGain = $state(0); // XP gained on the last answer (for the popup)
   wrong = $state<Question[]>([]);
   timeLeft = $state(TIME_PER_Q);
+  timeUsed = $state(0); // total seconds spent answering (leaderboard speed tiebreak)
 
   // end-of-game
   summary = $state<EndSummary | null>(null);
@@ -151,6 +152,7 @@ class GameStore {
     this.fastCount = 0;
     this.gameXp = 0;
     this.lastGain = 0;
+    this.timeUsed = 0;
     this.wrong = [];
     this.correctKeys = [];
     this.summary = null;
@@ -213,6 +215,8 @@ class GameStore {
     const q = this.current;
     if (!q) return;
     this.selected = i;
+    // Accumulate time spent on this question (full TIME_PER_Q on a timeout).
+    this.timeUsed += Math.max(0, TIME_PER_Q - this.timeLeft);
 
     const correct = i === q.answer;
     if (correct) {

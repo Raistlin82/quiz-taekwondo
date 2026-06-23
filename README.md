@@ -101,6 +101,10 @@ Per attivarlo servono tre passaggi una tantum nel dashboard Supabase:
 alter table scores add column if not exists user_id uuid references auth.users(id);
 create index if not exists scores_user_id_idx on scores(user_id);
 
+-- Tempo totale della partita (secondi): spareggio della classifica — a parità
+-- di punti, chi ci ha messo meno sta sopra.
+alter table scores add column if not exists secs real;
+
 -- (consigliato) policy di inserimento più stretta: ognuno scrive solo i propri
 -- punteggi (o righe anonime senza user_id). Sostituisce "inserimento pubblico".
 drop policy if exists "inserimento pubblico" on scores;
@@ -110,8 +114,11 @@ create policy "inserimento proprio"
 ```
 
 > La lettura resta pubblica (classifica visibile a tutti). L'app invia comunque
-> il punteggio anche prima della migrazione: se la colonna `user_id` non esiste
-> ancora, l'inserimento viene ritentato automaticamente senza di essa.
+> il punteggio anche prima delle migrazioni: se le colonne `user_id`/`secs` non
+> esistono ancora, l'inserimento viene ritentato automaticamente senza di esse.
+> Le classifiche sono **separate per gruppo-cintura** (colore + grado superiore)
+> e ordinate per punti pesati sulla difficoltà, poi per tempo totale (più veloce
+> = più in alto), poi per accuratezza.
 
 ### Salvataggio automatico dei progressi nel cloud
 XP, livello, badge e coda di ripasso si salvano in automatico nel cloud, legati

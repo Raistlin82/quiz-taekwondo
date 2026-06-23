@@ -46,7 +46,7 @@
             <span class="lb-rank">{medals[rank] ?? rank + 1}</span>
             <BeltDot {belt} />
             <span class="lb-name">{row.name}{#if mine}<span class="sr-only"> (tu)</span>{/if}</span>
-            <span class="lb-meta">{belt.name} · {row.diff} · {row.score}/{row.total}</span>
+            <span class="lb-meta">{belt.name} · {row.diff}{#if row.secs != null} · ⏱{Math.round(row.secs)}s{/if}</span>
             <span class="lb-pts">{row.points ?? 0}<span class="u">pt</span></span>
           </div>
         {/each}

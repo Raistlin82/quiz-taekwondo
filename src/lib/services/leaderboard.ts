@@ -14,6 +14,7 @@ export interface ScoreRow {
   pct: number;
   belt: number;
   diff: string;
+  secs?: number; // total seconds taken (speed tiebreak; lower is better)
   ts?: number;
   points?: number; // difficulty-weighted ranking points (computed client-side)
 }
@@ -25,6 +26,7 @@ export interface SubmitInput {
   pct: number;
   belt: number;
   diff: string;
+  secs?: number;
 }
 
 export interface LeaderboardResult {
@@ -66,9 +68,12 @@ const withPoints = (rows: ScoreRow[]): ScoreRow[] =>
   rows.map((r) => ({ ...r, points: leaderboardPoints(r.pct, r.diff) }));
 
 /** Rank by difficulty-weighted points first (harder runs win at equal belt),
- *  then accuracy, then raw correct, then earliest submission. */
+ *  then — at equal points — by OVERALL SPEED (less total time wins), then
+ *  accuracy, then raw correct, then earliest submission. Rows without a
+ *  recorded time sort after those that have one. */
 const rankRows = (a: ScoreRow, b: ScoreRow) =>
   (b.points ?? 0) - (a.points ?? 0) ||
+  (a.secs ?? Infinity) - (b.secs ?? Infinity) ||
   b.pct - a.pct ||
   b.score - a.score ||
   (a.ts ?? 0) - (b.ts ?? 0);
@@ -97,19 +102,32 @@ export async function submitAndFetch(
     let myId: string | null = null;
     let postedRow: ScoreRow | null = null;
 
-    const postScore = (withUser: boolean) =>
+    // Base row (always-present columns) + optional columns (user_id, secs) that
+    // may not exist yet. Try richest body first, then degrade so the online
+    // board keeps working before the DB migrations are applied.
+    const { secs, ...base } = entry;
+    const opt: Record<string, unknown> = {};
+    if (userId) opt.user_id = userId;
+    if (secs != null) opt.secs = secs;
+    const candidates: Record<string, unknown>[] = [{ ...base, ...opt }];
+    if (userId && secs != null) candidates.push({ ...base, user_id: userId }); // drop secs
+    candidates.push(base); // drop all optionals
+
+    const postScore = (body: Record<string, unknown>) =>
       fetch(`${SUPABASE_URL}/rest/v1/scores`, {
         method: 'POST',
         headers: { ...sbHeaders(), Prefer: 'return=representation' },
-        body: JSON.stringify(withUser && userId ? { ...entry, user_id: userId } : entry),
+        body: JSON.stringify(body),
       });
 
     // Step 1: submit. Only a failure HERE should fall back to local storage.
     try {
-      let res = await postScore(true);
-      // If the optional user_id column isn't there yet, retry without it.
-      if (!res.ok && userId) res = await postScore(false);
-      if (!res.ok) throw new Error('post failed');
+      let res: Response | null = null;
+      for (const body of candidates) {
+        res = await postScore(body);
+        if (res.ok) break;
+      }
+      if (!res || !res.ok) throw new Error('post failed');
       const ins = await res.json();
       postedRow = (ins?.[0] as ScoreRow) ?? null;
       myId = postedRow?.id ?? null;

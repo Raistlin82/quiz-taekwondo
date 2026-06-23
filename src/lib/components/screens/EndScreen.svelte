@@ -57,6 +57,7 @@
         pct: Math.round(pct * 100),
         belt: gameStore.selBelt,
         diff: DIFFICULTIES[gameStore.selDiff].nm,
+        secs: Math.round(gameStore.timeUsed * 10) / 10,
       },
       authStore.userId,
     )
