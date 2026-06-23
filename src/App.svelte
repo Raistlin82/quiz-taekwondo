@@ -15,6 +15,7 @@
   import QuizScreen from './lib/components/screens/QuizScreen.svelte';
   import EndScreen from './lib/components/screens/EndScreen.svelte';
   import StudyScreen from './lib/components/screens/StudyScreen.svelte';
+  import RankingScreen from './lib/components/screens/RankingScreen.svelte';
 </script>
 
 <div class="bg"></div>
@@ -50,6 +51,8 @@
         <EndScreen />
       {:else if gameStore.screen === 'study'}
         <StudyScreen />
+      {:else if gameStore.screen === 'ranking'}
+        <RankingScreen />
       {/if}
     </div>
   {/key}

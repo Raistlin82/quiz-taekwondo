@@ -76,14 +76,15 @@ export interface BeltGroup {
   key: string;
   label: string;
   beltIds: number[];
+  color: string; // representative colour (for the per-colour breakdown)
 }
 export const BELT_GROUPS: BeltGroup[] = [
-  { key: 'bianca', label: 'Bianca', beltIds: [1] },
-  { key: 'gialla', label: 'Gialla', beltIds: [2, 3] },
-  { key: 'verde', label: 'Verde', beltIds: [4, 5] },
-  { key: 'blu', label: 'Blu', beltIds: [6, 7] },
-  { key: 'rossa', label: 'Rossa', beltIds: [8, 9] },
-  { key: 'nera', label: 'Nera', beltIds: [10, 11, 12] },
+  { key: 'bianca', label: 'Bianca', beltIds: [1], color: '#e5e7eb' },
+  { key: 'gialla', label: 'Gialla', beltIds: [2, 3], color: '#fbbf24' },
+  { key: 'verde', label: 'Verde', beltIds: [4, 5], color: '#22c55e' },
+  { key: 'blu', label: 'Blu', beltIds: [6, 7], color: '#3b82f6' },
+  { key: 'rossa', label: 'Rossa', beltIds: [8, 9], color: '#ef4444' },
+  { key: 'nera', label: 'Nera', beltIds: [10, 11, 12], color: '#1f2937' },
 ];
 export function beltGroupOf(beltId: number): BeltGroup {
   return BELT_GROUPS.find((g) => g.beltIds.includes(beltId)) ?? BELT_GROUPS[0];

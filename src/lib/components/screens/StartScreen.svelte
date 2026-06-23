@@ -93,6 +93,10 @@
     </button>
   </div>
 
+  <button class="ghost ranking-btn" onclick={() => gameStore.goRanking()}>
+    🏆 Classifica giocatori
+  </button>
+
   {#if due > 0}
     <p class="hint">🔁 Hai {due} domand{due === 1 ? 'a' : 'e'} da ripassare.</p>
   {:else}
@@ -241,5 +245,12 @@
   .secondary button:disabled {
     opacity: 0.5;
     cursor: default;
+  }
+  .ranking-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px;
+    min-height: 44px;
+    font-size: 0.95rem;
   }
 </style>

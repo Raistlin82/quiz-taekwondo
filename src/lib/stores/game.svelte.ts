@@ -10,7 +10,7 @@ import { burst } from '../confetti';
 import { themeStore } from './theme.svelte';
 import { progressStore, answerXp, type GameResult, type CatStat } from './progress.svelte';
 
-export type Screen = 'start' | 'quiz' | 'end' | 'study';
+export type Screen = 'start' | 'quiz' | 'end' | 'study' | 'ranking';
 export type GameMode = 'quiz' | 'review';
 
 /** Stable key for a question (used by the SRS queue). */
@@ -285,6 +285,11 @@ class GameStore {
   goStudy(): void {
     this.stopTimer();
     this.screen = 'study';
+  }
+
+  goRanking(): void {
+    this.stopTimer();
+    this.screen = 'ranking';
   }
 
   /* ---- timer ---- */

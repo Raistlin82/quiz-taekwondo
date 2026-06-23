@@ -137,6 +137,38 @@ create policy "progress: aggiorna i propri" on progress for update using (auth.u
 > progressi continuano a salvarsi in locale (per dispositivo): nessun errore
 > bloccante.
 
+### Classifica giocatori (carriera)
+La schermata **🏆 Classifica giocatori** ordina i giocatori per un *punteggio
+carriera* (XP + trofei + punti cumulati) e mostra il cumulato per colore di
+cintura. Serve una tabella **pubblica** `profiles` (un record per giocatore,
+scritto dal client a fine partita; lettura pubblica, scrittura solo della
+propria riga). Crea la tabella una volta sola:
+
+```sql
+create table if not exists profiles (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  name text,
+  xp int not null default 0,
+  level int not null default 1,
+  badges int not null default 0,
+  cum_points int not null default 0,
+  by_color jsonb not null default '{}',
+  career int not null default 0,
+  updated_at timestamptz not null default now()
+);
+alter table profiles enable row level security;
+
+-- Lettura pubblica (classifica visibile a tutti).
+create policy "profiles: lettura pubblica" on profiles for select using (true);
+-- Scrittura solo della propria riga (richiede sessione: il client usa il JWT).
+create policy "profiles: crea i propri"    on profiles for insert with check (auth.uid() = user_id);
+create policy "profiles: aggiorna i propri" on profiles for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+```
+
+> Senza questa tabella la classifica giocatori resta semplicemente vuota
+> ("non ancora attiva"): nessun errore bloccante. Il cumulato per colore parte
+> dal momento dell'attivazione (le partite successive si accumulano).
+
 ## 📁 Struttura
 - `src/` — codice dell'app (componenti Svelte, store, dati, servizi)
 - `src/lib/data/questions.ts` — il banco domande

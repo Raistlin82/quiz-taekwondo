@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { beltById, DIFFICULTIES } from '../../data/belts';
+  import { beltById, beltGroupOf, leaderboardPoints, DIFFICULTIES } from '../../data/belts';
   import { gameStore } from '../../stores/game.svelte';
+  import { progressStore } from '../../stores/progress.svelte';
   import { badgeById } from '../../data/badges';
   import { submitAndFetch, clearLocal, type ScoreRow } from '../../services/leaderboard';
+  import { recordProfileRun } from '../../services/profiles';
   import { authStore } from '../../stores/auth.svelte';
   import { SHARED } from '../../config';
   import { rain } from '../../confetti';
@@ -67,6 +69,17 @@
       })
       .catch(() => (error = 'Impossibile caricare la classifica.'))
       .finally(() => (loading = false));
+
+    // Update the player's career profile (XP, trophies, cumulative points,
+    // per-colour). Best-effort, fire-and-forget — independent of the board.
+    void recordProfileRun({
+      name: gameStore.playerName,
+      xp: progressStore.xp,
+      level: progressStore.level.level,
+      badges: progressStore.unlockedBadges.length,
+      runPoints: leaderboardPoints(Math.round(pct * 100), DIFFICULTIES[gameStore.selDiff].nm),
+      colorLabel: beltGroupOf(gameStore.selBelt).label,
+    });
   });
 
   // Celebration, timed to land as the score ring finishes filling (U35/U31/U38).
