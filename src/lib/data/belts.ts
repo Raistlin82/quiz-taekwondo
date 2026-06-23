@@ -20,6 +20,7 @@ export interface Difficulty {
   ds: string;
   maxLvl: 1 | 2 | 3; // highest question level included
   count: number; // target number of questions
+  weight: number; // leaderboard multiplier (harder = more points)
 }
 
 export interface Question {
@@ -56,9 +57,9 @@ export const BELTS: Belt[] = [
 ];
 
 export const DIFFICULTIES: Record<DifficultyKey, Difficulty> = {
-  facile: { key: 'facile', nm: 'Facile', em: '😊', ds: '10 domande', maxLvl: 1, count: 10 },
-  medio: { key: 'medio', nm: 'Medio', em: '⚡', ds: '15 domande', maxLvl: 2, count: 15 },
-  difficile: { key: 'difficile', nm: 'Tosto', em: '🔥', ds: '20 · tutte!', maxLvl: 3, count: 20 },
+  facile: { key: 'facile', nm: 'Facile', em: '😊', ds: '10 domande', maxLvl: 1, count: 10, weight: 1 },
+  medio: { key: 'medio', nm: 'Medio', em: '⚡', ds: '15 domande', maxLvl: 2, count: 15, weight: 1.5 },
+  difficile: { key: 'difficile', nm: 'Tosto', em: '🔥', ds: '20 · tutte!', maxLvl: 3, count: 20, weight: 2 },
 };
 
 export const TIME_PER_Q = 10; // seconds per question
@@ -67,3 +68,33 @@ export const beltById = (id: number): Belt | undefined => BELTS.find((b) => b.id
 
 /** Fallback belt used when an id is unknown (e.g. stale leaderboard rows). */
 export const UNKNOWN_BELT: Belt = { id: 0, name: '-', main: '#cbd5e1', stripe: null };
+
+/* ---- Leaderboard belt grouping ----
+   Each colour shares one board with its "superiore"/striped grade; the black
+   belt board covers all dan grades. Boards are NEVER mixed across colours. */
+export interface BeltGroup {
+  key: string;
+  label: string;
+  beltIds: number[];
+}
+export const BELT_GROUPS: BeltGroup[] = [
+  { key: 'bianca', label: 'Bianca', beltIds: [1] },
+  { key: 'gialla', label: 'Gialla', beltIds: [2, 3] },
+  { key: 'verde', label: 'Verde', beltIds: [4, 5] },
+  { key: 'blu', label: 'Blu', beltIds: [6, 7] },
+  { key: 'rossa', label: 'Rossa', beltIds: [8, 9] },
+  { key: 'nera', label: 'Nera', beltIds: [10, 11, 12] },
+];
+export function beltGroupOf(beltId: number): BeltGroup {
+  return BELT_GROUPS.find((g) => g.beltIds.includes(beltId)) ?? BELT_GROUPS[0];
+}
+
+/** Difficulty multiplier looked up by its display name (as stored on a score row). */
+const DIFF_WEIGHT_BY_NAME: Record<string, number> = Object.fromEntries(
+  Object.values(DIFFICULTIES).map((d) => [d.nm, d.weight]),
+);
+/** Leaderboard points: accuracy (0..100) scaled by the difficulty weight, so at
+ *  equal belt a harder run always outranks an easier one of equal accuracy. */
+export function leaderboardPoints(pct: number, diffName: string): number {
+  return Math.round(pct * (DIFF_WEIGHT_BY_NAME[diffName] ?? 1));
+}

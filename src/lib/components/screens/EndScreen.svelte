@@ -35,6 +35,7 @@
   let online = $state(false);
   let loading = $state(true);
   let error = $state<string | null>(null);
+  let groupLabel = $state('');
 
   let showReview = $state(false);
 
@@ -61,6 +62,7 @@
         rows = res.rows;
         myId = res.myId;
         online = res.online;
+        groupLabel = res.groupLabel;
         if (SHARED && !res.online) error = 'Classifica online non raggiungibile. Mostro quella locale.';
       })
       .catch(() => (error = 'Impossibile caricare la classifica.'))
@@ -138,7 +140,7 @@
   {/if}
 
   {#if !isReview}
-    <div class="lb-title">🏁 Classifica</div>
+    <div class="lb-title">🏁 Classifica{#if groupLabel} · {groupLabel}{/if}</div>
     <Leaderboard {rows} {myId} {online} {loading} {error} />
     {#if !online}
       <button class="lb-clear" onclick={resetLocal}>🗑️ Azzera classifica</button>

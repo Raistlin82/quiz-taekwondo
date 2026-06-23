@@ -4,6 +4,7 @@
    ============================================================ */
 
 import { SUPABASE_URL, SUPABASE_KEY, SHARED, LB_KEY } from '../config';
+import { beltGroupOf, leaderboardPoints } from '../data/belts';
 
 export interface ScoreRow {
   id: string;
@@ -14,6 +15,7 @@ export interface ScoreRow {
   belt: number;
   diff: string;
   ts?: number;
+  points?: number; // difficulty-weighted ranking points (computed client-side)
 }
 
 export interface SubmitInput {
@@ -29,6 +31,7 @@ export interface LeaderboardResult {
   rows: ScoreRow[];
   myId: string | null;
   online: boolean;
+  groupLabel: string; // belt-group this board is for (e.g. "Gialla")
 }
 
 const sbHeaders = () => ({
@@ -58,8 +61,17 @@ export function clearLocal(): void {
   storeLocal([]);
 }
 
-const sortRows = (a: ScoreRow, b: ScoreRow) =>
-  b.pct - a.pct || b.score - a.score || (a.ts ?? 0) - (b.ts ?? 0);
+/** Attach difficulty-weighted points to each row. */
+const withPoints = (rows: ScoreRow[]): ScoreRow[] =>
+  rows.map((r) => ({ ...r, points: leaderboardPoints(r.pct, r.diff) }));
+
+/** Rank by difficulty-weighted points first (harder runs win at equal belt),
+ *  then accuracy, then raw correct, then earliest submission. */
+const rankRows = (a: ScoreRow, b: ScoreRow) =>
+  (b.points ?? 0) - (a.points ?? 0) ||
+  b.pct - a.pct ||
+  b.score - a.score ||
+  (a.ts ?? 0) - (b.ts ?? 0);
 
 // Names used for connectivity/setup tests that must never appear on the board.
 const JUNK_NAMES = new Set(['__smoketest__']);
@@ -78,6 +90,8 @@ export async function submitAndFetch(
   entry: SubmitInput,
   userId: string | null = null,
 ): Promise<LeaderboardResult> {
+  // The board is scoped to the player's belt GROUP (colour + its grades).
+  const group = beltGroupOf(entry.belt);
   if (SHARED) {
     let posted = false;
     let myId: string | null = null;
@@ -108,16 +122,23 @@ export async function submitAndFetch(
     // failure must NOT trigger a second (local) write of the same score.
     if (posted) {
       try {
+        // Only this belt group's rows — boards are never mixed across colours.
+        const inList = group.beltIds.join(',');
         const r2 = await fetch(
-          `${SUPABASE_URL}/rest/v1/scores?select=*&order=pct.desc,score.desc,created_at.asc&limit=100`,
+          `${SUPABASE_URL}/rest/v1/scores?select=*&belt=in.(${inList})&order=pct.desc&limit=200`,
           { headers: sbHeaders() },
         );
         if (!r2.ok) throw new Error('get failed');
-        const rows = dropJunk((await r2.json()) as ScoreRow[]);
-        return { rows, myId, online: true };
+        const rows = withPoints(dropJunk((await r2.json()) as ScoreRow[])).sort(rankRows);
+        return { rows, myId, online: true, groupLabel: group.label };
       } catch {
         // Submission succeeded; only the board read failed. Show what we have.
-        return { rows: postedRow ? [postedRow] : [], myId, online: true };
+        return {
+          rows: postedRow ? withPoints([postedRow]) : [],
+          myId,
+          online: true,
+          groupLabel: group.label,
+        };
       }
     }
   }
@@ -127,8 +148,10 @@ export async function submitAndFetch(
   const id = 'L' + Date.now() + Math.random().toString(36).slice(2, 6);
   const row: ScoreRow = { ...entry, id, ts: Date.now() };
   board.push(row);
-  board.sort(sortRows);
-  if (board.length > 50) board.length = 50;
-  storeLocal(board);
-  return { rows: board, myId: id, online: false };
+  const ranked = withPoints(board).sort(rankRows);
+  if (ranked.length > 50) ranked.length = 50;
+  storeLocal(ranked);
+  // Display only the player's belt group.
+  const rows = ranked.filter((r) => group.beltIds.includes(r.belt));
+  return { rows, myId: id, online: false, groupLabel: group.label };
 }

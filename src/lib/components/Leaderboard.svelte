@@ -36,7 +36,7 @@
       {/if}
     {:else}
       {#if online}
-        <div class="lb-tag">🌍 Classifica online · tutti i giocatori</div>
+        <div class="lb-tag">🌍 Online · punti = accuratezza × difficoltà</div>
       {/if}
       <div role="list">
         {#each display as { row, rank } (row.id)}
@@ -46,8 +46,8 @@
             <span class="lb-rank">{medals[rank] ?? rank + 1}</span>
             <BeltDot {belt} />
             <span class="lb-name">{row.name}{#if mine}<span class="sr-only"> (tu)</span>{/if}</span>
-            <span class="lb-meta">{belt.name} · {row.diff}</span>
-            <span class="lb-pts">{row.score}/{row.total}</span>
+            <span class="lb-meta">{belt.name} · {row.diff} · {row.score}/{row.total}</span>
+            <span class="lb-pts">{row.points ?? 0}<span class="u">pt</span></span>
           </div>
         {/each}
       </div>
@@ -121,6 +121,14 @@
     font-family: var(--font-display);
     font-weight: 800;
     color: var(--blu-d);
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+  .lb-pts .u {
+    font-size: 0.68rem;
+    font-weight: 700;
+    margin-left: 2px;
+    color: var(--ink-soft);
   }
   .lb-empty {
     text-align: center;
