@@ -63,6 +63,9 @@
 
   <h1 class="title">Classifica <span class="grad">Giocatori</span></h1>
   <p class="sub">Punteggio carriera = XP + trofei + punti cumulati</p>
+  {#if !authStore.isLoggedIn}
+    <p class="guest-hint">🔒 Solo i giocatori con account compaiono in classifica. Accedi per partecipare.</p>
+  {/if}
 
   {#if me}
     <div class="me-card">
@@ -142,6 +145,17 @@
     font-size: 0.82rem;
     font-weight: 500;
     margin-bottom: 14px;
+  }
+  .guest-hint {
+    text-align: left;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 9px 12px;
+    margin: -6px 0 14px;
   }
 
   .me-card {

@@ -94,10 +94,13 @@ const dropJunk = (rows: ScoreRow[]): ScoreRow[] => rows.filter((r) => !JUNK_NAME
 export async function submitAndFetch(
   entry: SubmitInput,
   userId: string | null = null,
+  online = true,
 ): Promise<LeaderboardResult> {
   // The board is scoped to the player's belt GROUP (colour + its grades).
+  // `online` is false for guests (anonymous) → they never write to the shared
+  // board and instead keep a local, device-only leaderboard.
   const group = beltGroupOf(entry.belt);
-  if (SHARED) {
+  if (SHARED && online) {
     let posted = false;
     let myId: string | null = null;
     let postedRow: ScoreRow | null = null;

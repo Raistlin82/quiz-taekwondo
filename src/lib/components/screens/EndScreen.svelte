@@ -60,6 +60,7 @@
         secs: Math.round(gameStore.timeUsed * 10) / 10,
       },
       authStore.userId,
+      authStore.isLoggedIn, // guests stay on a local board, never the shared one
     )
       .then((res) => {
         rows = res.rows;
@@ -71,16 +72,17 @@
       .catch(() => (error = 'Impossibile caricare la classifica.'))
       .finally(() => (loading = false));
 
-    // Update the player's career profile (XP, trophies, cumulative points,
-    // per-colour). Best-effort, fire-and-forget — independent of the board.
-    void recordProfileRun({
-      name: gameStore.playerName,
-      xp: progressStore.xp,
-      level: progressStore.level.level,
-      badges: progressStore.unlockedBadges.length,
-      runPoints: leaderboardPoints(Math.round(pct * 100), DIFFICULTIES[gameStore.selDiff].nm),
-      colorLabel: beltGroupOf(gameStore.selBelt).label,
-    });
+    // Career profile only for logged-in players — guests are never ranked.
+    if (authStore.isLoggedIn) {
+      void recordProfileRun({
+        name: gameStore.playerName,
+        xp: progressStore.xp,
+        level: progressStore.level.level,
+        badges: progressStore.unlockedBadges.length,
+        runPoints: leaderboardPoints(Math.round(pct * 100), DIFFICULTIES[gameStore.selDiff].nm),
+        colorLabel: beltGroupOf(gameStore.selBelt).label,
+      });
+    }
   });
 
   // Celebration, timed to land as the score ring finishes filling (U35/U31/U38).
@@ -155,6 +157,12 @@
 
   {#if !isReview}
     <div class="lb-title">🏁 Classifica{#if groupLabel} · {groupLabel}{/if}</div>
+    {#if !authStore.isLoggedIn}
+      <p class="guest-note">
+        🔒 Come ospite la classifica è solo su questo dispositivo. Accedi con
+        “💾 Salva i progressi” per entrare nella classifica online e nella carriera.
+      </p>
+    {/if}
     <Leaderboard {rows} {myId} {online} {loading} {error} />
     {#if !online}
       <button class="lb-clear" onclick={resetLocal}>🗑️ Azzera classifica</button>
@@ -290,6 +298,16 @@
     font-size: 1.15rem;
     margin: 20px 0 8px;
     color: var(--ink);
+  }
+  .guest-note {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: var(--ink-soft);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 9px 12px;
+    margin-bottom: 10px;
   }
   .cats {
     display: flex;

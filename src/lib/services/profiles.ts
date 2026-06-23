@@ -61,7 +61,8 @@ async function doRecordProfileRun(input: RecordRunInput): Promise<void> {
   try {
     const { data: sess } = await supabase.auth.getSession();
     const uid = sess.session?.user?.id;
-    if (!uid) return;
+    // Guests (anonymous sessions) are NOT ranked: no career profile is written.
+    if (!uid || sess.session?.user?.is_anonymous) return;
 
     // Preferred path: atomic server-side increment (correct even across tabs
     // and devices — no lost updates). Requires the increment_profile_run()
