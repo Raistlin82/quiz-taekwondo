@@ -38,4 +38,6 @@
       {/if}
     </div>
   {/key}
+
+  <footer class="app-footer">© 2026 Daniel Rendina</footer>
 </div>

@@ -4,6 +4,7 @@
   import { gameStore } from '../../stores/game.svelte';
   import { badgeById } from '../../data/badges';
   import { submitAndFetch, clearLocal, type ScoreRow } from '../../services/leaderboard';
+  import { authStore } from '../../stores/auth.svelte';
   import { SHARED } from '../../config';
   import { rain } from '../../confetti';
   import { playSound } from '../../audio';
@@ -45,14 +46,17 @@
       loading = false;
       return;
     }
-    submitAndFetch({
-      name: gameStore.playerName,
-      score: gameStore.score,
-      total: gameStore.total,
-      pct: Math.round(pct * 100),
-      belt: gameStore.selBelt,
-      diff: DIFFICULTIES[gameStore.selDiff].nm,
-    })
+    submitAndFetch(
+      {
+        name: gameStore.playerName,
+        score: gameStore.score,
+        total: gameStore.total,
+        pct: Math.round(pct * 100),
+        belt: gameStore.selBelt,
+        diff: DIFFICULTIES[gameStore.selDiff].nm,
+      },
+      authStore.userId,
+    )
       .then((res) => {
         rows = res.rows;
         myId = res.myId;

@@ -77,6 +77,42 @@ create policy "inserimento pubblico" on scores for insert with check (true);
 
 > ⚠️ Non usare mai la chiave `service_role` / `secret` nel client.
 
+## 🔐 Accesso (Supabase Auth) — ospite + magic link
+Il login è **facoltativo e guest-first**: all'avvio l'app crea una sessione
+**anonima** (ospite), così ogni giocatore ha un id stabile. Dalla schermata
+iniziale, con **💾 Salva i progressi** si inserisce l'email e si riceve un
+**magic link** (nessuna password) che converte l'ospite in account permanente,
+ritrovabile su ogni dispositivo. Se Supabase Auth non è raggiungibile o non è
+configurato, l'app continua a funzionare in **modalità locale** senza login.
+
+Per attivarlo servono tre passaggi una tantum nel dashboard Supabase:
+
+1. **Authentication → Sign In / Providers**
+   - abilitare **Email** (con *magic link* / OTP);
+   - abilitare **Anonymous sign-ins**.
+2. **Authentication → URL Configuration**
+   - aggiungere l'URL pubblico (es. `https://TUONOME.github.io/quiz-taekwondo/`)
+     tra i **Redirect URLs** (così il magic link riporta all'app).
+3. **SQL Editor → New query** — aggiungere la colonna che lega i punteggi
+   all'utente (l'app funziona anche senza, ma i punteggi non sarebbero collegati
+   all'account):
+
+```sql
+alter table scores add column if not exists user_id uuid references auth.users(id);
+create index if not exists scores_user_id_idx on scores(user_id);
+
+-- (consigliato) policy di inserimento più stretta: ognuno scrive solo i propri
+-- punteggi (o righe anonime senza user_id). Sostituisce "inserimento pubblico".
+drop policy if exists "inserimento pubblico" on scores;
+create policy "inserimento proprio"
+  on scores for insert
+  with check (user_id is null or auth.uid() = user_id);
+```
+
+> La lettura resta pubblica (classifica visibile a tutti). L'app invia comunque
+> il punteggio anche prima della migrazione: se la colonna `user_id` non esiste
+> ancora, l'inserimento viene ritentato automaticamente senza di essa.
+
 ## 📁 Struttura
 - `src/` — codice dell'app (componenti Svelte, store, dati, servizi)
 - `src/lib/data/questions.ts` — il banco domande

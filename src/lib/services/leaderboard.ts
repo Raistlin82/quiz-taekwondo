@@ -68,20 +68,33 @@ const dropJunk = (rows: ScoreRow[]): ScoreRow[] => rows.filter((r) => !JUNK_NAME
 /**
  * Submit a score and return the (sorted, top-100) leaderboard.
  * Falls back to localStorage when Supabase is unavailable.
+ *
+ * `userId` (the authenticated/guest Supabase user id) is attached to the row
+ * when present. It's sent via an optional `user_id` column: if that column
+ * hasn't been added to the table yet, the insert is retried WITHOUT it so the
+ * online leaderboard keeps working before the DB migration is applied.
  */
-export async function submitAndFetch(entry: SubmitInput): Promise<LeaderboardResult> {
+export async function submitAndFetch(
+  entry: SubmitInput,
+  userId: string | null = null,
+): Promise<LeaderboardResult> {
   if (SHARED) {
     let posted = false;
     let myId: string | null = null;
     let postedRow: ScoreRow | null = null;
 
-    // Step 1: submit. Only a failure HERE should fall back to local storage.
-    try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/scores`, {
+    const postScore = (withUser: boolean) =>
+      fetch(`${SUPABASE_URL}/rest/v1/scores`, {
         method: 'POST',
         headers: { ...sbHeaders(), Prefer: 'return=representation' },
-        body: JSON.stringify(entry),
+        body: JSON.stringify(withUser && userId ? { ...entry, user_id: userId } : entry),
       });
+
+    // Step 1: submit. Only a failure HERE should fall back to local storage.
+    try {
+      let res = await postScore(true);
+      // If the optional user_id column isn't there yet, retry without it.
+      if (!res.ok && userId) res = await postScore(false);
       if (!res.ok) throw new Error('post failed');
       const ins = await res.json();
       postedRow = (ins?.[0] as ScoreRow) ?? null;

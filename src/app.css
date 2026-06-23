@@ -215,6 +215,14 @@ body {
   border-radius: calc(var(--radius) - 5px);
   pointer-events: none;
 }
+.app-footer {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: var(--ink-faint);
+}
 
 /* ---- Typography ---- */
 h1 {

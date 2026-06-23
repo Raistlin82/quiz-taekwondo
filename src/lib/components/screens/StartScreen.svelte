@@ -3,11 +3,20 @@
   import { beltById } from '../../data/belts';
   import { gameStore } from '../../stores/game.svelte';
   import { progressStore } from '../../stores/progress.svelte';
+  import { authStore } from '../../stores/auth.svelte';
   import BeltPicker from '../BeltPicker.svelte';
   import DifficultyPicker from '../DifficultyPicker.svelte';
+  import AuthBar from '../AuthBar.svelte';
 
   const belt = $derived(beltById(gameStore.selBelt)!);
   const lvl = $derived(progressStore.level);
+
+  // Prefill the player name from the signed-in account (only while the user
+  // hasn't typed their own name yet), so the leaderboard uses a consistent id.
+  $effect(() => {
+    const name = authStore.displayName;
+    if (name && !gameStore.playerName.trim()) gameStore.playerName = name;
+  });
 
   // `tick` lets the due count re-evaluate on wall-clock events (a card can
   // become due while the start screen sits idle past midnight). (B5)
@@ -64,6 +73,8 @@
 
   <h1>Quiz <span class="grad">Esame Taekwon-Do</span></h1>
   <p class="sub">Scegli la cintura e il livello, poi vai! 🥋</p>
+
+  <AuthBar />
 
   <div class="player-strip">
     <div class="lvl">
