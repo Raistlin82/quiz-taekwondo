@@ -3,7 +3,7 @@
    Returns a uniform ScoreRow[] regardless of the source.
    ============================================================ */
 
-import { SUPABASE_URL, SUPABASE_KEY, SHARED, LB_KEY } from '../config';
+import { SUPABASE_URL, SUPABASE_KEY, SHARED, LB_KEY, supabase } from '../config';
 import { beltGroupOf, leaderboardPoints } from '../data/belts';
 
 export interface ScoreRow {
@@ -109,36 +109,29 @@ export async function submitAndFetch(
     // may not exist yet. Try richest body first, then degrade so the online
     // board keeps working before the DB migrations are applied.
     const { secs, ...base } = entry;
-    // Try richest first, then degrade. CRUCIAL: keep `secs` when dropping
-    // `user_id` (the user_id row is rejected by RLS on anon-key requests, so we
-    // must not let that fallback also strip secs — that's the speed tiebreak).
-    const candidates: Record<string, unknown>[] = [];
-    if (userId && secs != null) candidates.push({ ...base, user_id: userId, secs });
-    if (secs != null) candidates.push({ ...base, secs }); // keep secs even if user_id is refused
-    if (userId) candidates.push({ ...base, user_id: userId });
-    candidates.push(base);
 
-    const postScore = (body: Record<string, unknown>) =>
-      fetch(`${SUPABASE_URL}/rest/v1/scores`, {
-        method: 'POST',
-        headers: { ...sbHeaders(), Prefer: 'return=representation' },
-        body: JSON.stringify(body),
-      });
-
-    // Step 1: submit. Only a failure HERE should fall back to local storage.
+    // Step 1: submit via the supabase-js CLIENT so the session JWT is sent —
+    // then auth.uid() matches and the row's user_id (anon uid for a named guest,
+    // permanent uid for a logged-in player) is actually stored (RLS-compliant).
+    // Only a failure HERE should fall back to local storage.
     try {
-      let res: Response | null = null;
-      for (const body of candidates) {
-        res = await postScore(body);
-        if (res.ok) break;
+      if (!supabase) throw new Error('no client');
+      const row = { ...base, secs, user_id: userId ?? null };
+      let res = await supabase.from('scores').insert(row).select().single();
+      // If the optional `secs` column doesn't exist yet, retry without it.
+      if (res.error) {
+        res = await supabase
+          .from('scores')
+          .insert({ ...base, user_id: userId ?? null })
+          .select()
+          .single();
       }
-      if (!res || !res.ok) throw new Error('post failed');
-      const ins = await res.json();
-      postedRow = (ins?.[0] as ScoreRow) ?? null;
+      if (res.error) throw res.error;
+      postedRow = (res.data as ScoreRow) ?? null;
       myId = postedRow?.id ?? null;
       posted = true;
     } catch {
-      // POST itself failed → fall through to the local fallback below.
+      // Submit failed → fall through to the local fallback below.
     }
 
     // Step 2: the score IS saved server-side. Fetch the board, but a GET
