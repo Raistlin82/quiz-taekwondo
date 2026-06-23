@@ -5,7 +5,7 @@
    ============================================================ */
 
 export interface Belt {
-  id: number; // 1..8
+  id: number; // 1..12
   name: string;
   main: string; // primary colour
   stripe: string | null; // optional stripe colour

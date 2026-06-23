@@ -9,6 +9,10 @@ It was rewritten from a single legacy `index.html` (still in git history) into a
 with gamification (XP, streak, badges), a study/spaced-repetition mode, light/dark themes, audio +
 haptic feedback, and an online leaderboard (Supabase) with a localStorage fallback.
 
+Design specs and audits live in `docs/`: the original design doc in `docs/superpowers/specs/`, and
+bug/UX + redesign notes in `docs/audit/`. Read these for the *why* behind current behaviour before
+changing it.
+
 ## Commands
 
 ```bash
@@ -19,8 +23,8 @@ npm run check    # svelte-check + tsc — run this after changes; CI-equivalent 
 ```
 
 There is no unit-test suite. Verification is `npm run check` + `npm run build` + a manual/Playwright
-play-through. The GitHub Actions workflow (`.github/workflows/deploy.yml`) builds and deploys to
-GitHub Pages on every push to `main`.
+play-through. `.github/workflows/deploy.yml` builds and deploys to GitHub Pages on every push to
+`main`; `claude.yml` and `claude-code-review.yml` wire up the `@claude` bot and automatic PR review.
 
 ## Architecture
 
@@ -35,13 +39,15 @@ of game state.
 - `src/lib/stores/progress.svelte.ts` — **persistent** player progress (XP, level, best streak,
   unlocked badges) and a **Leitner spaced-repetition queue** (`srs`), all in localStorage. XP is
   accumulated per-answer by the game store (`answerXp`) and passed into `recordGame` so the live
-  counter and the final total always agree.
+  counter and the final total always agree. Badge-unlock thresholds are hardcoded here (in
+  `recordGame` / `completeStudySession`); the badge catalog is `src/lib/data/badges.ts`.
 - `src/lib/stores/theme.svelte.ts` — light/dark theme + sound/haptic settings, persisted. `apply()`
   is called from `main.ts` before first paint and sets `data-theme` on `<html>`.
 
 ## Domain model (preserved from the original)
 
 `src/lib/data/belts.ts` + `questions.ts`:
+
 - **Belt selection is cumulative**: choosing belt N includes every question with `belt <= N`. `belt`
   on a question is its *minimum* belt, not an exact match.
 - `lvl` (1/2/3) is the difficulty tier; `DIFFICULTIES[key].maxLvl` is the ceiling and `count` the target.
@@ -49,6 +55,8 @@ of game state.
   (`q.cat`) for a balanced set, and shuffles each question's options (re-pointing `answer`). The actual
   length can be less than `count` if the filtered pool is small.
 - SRS cards are keyed by question text (`qKey(q) = q.q`).
+- A run **passes** at `pct >= 0.87` (87% correct); passing at belt ≥ 10 (Nera) unlocks the
+  black-belt badge. `TIME_PER_Q` (10s) bounds each question and drives the speed XP bonus.
 
 When adding questions: set `belt` to the lowest belt that should ever see it, set `lvl`, and reuse an
 existing `cat` emoji-label string exactly (categories are derived from `q.cat`, not an enum). The
@@ -60,7 +68,8 @@ belt→form (tul) mapping is in the comment header of `questions.ts`.
 `SHARED` is true, else falls back to localStorage (capped at 50, sorted pct→score→ts). Config is in
 `src/lib/config.ts`: the project URL + **anon public** key are committed defaults (anon key is
 public-safe — protected by RLS; never commit the `service_role` key). Override at build time with
-`VITE_SUPABASE_URL` / `VITE_SUPABASE_KEY`. The `scores` table + RLS policies are documented in `README.md`.
+`VITE_SUPABASE_URL` / `VITE_SUPABASE_KEY` (see `.env.example`; copy to a gitignored `.env.local` or
+set them as GitHub Action secrets). The `scores` table + RLS policies are documented in `README.md`.
 Note: the table currently has **select + insert** policies only (no delete/update) — anon clients
 cannot remove rows.
 
