@@ -1,68 +1,77 @@
 /* ============================================================
-   Background music — procedural "Dojang" pentatonic ambient loop.
-   Web Audio only (no files): a slow, hypnotic pentatonic melody
-   over a low root drone, gentle and low-volume. Loops until
-   stopped. Shares the SFX AudioContext. Guarded — no-ops when
-   Web Audio is unavailable.
+   Background music — warm ambient loop, fully procedural (Web
+   Audio, no files). A slow, consonant chord progression
+   (Am – F – C – G) is gently arpeggiated with soft detuned sine
+   "pads", warmed by a low-pass filter and an echo/space delay.
+   No randomness in pitch → it sounds intentional, not aimless.
+   Shares the SFX AudioContext. Guarded; loops until stopped.
    ============================================================ */
 
 import { getAudioContext } from './audio';
 
-// A-minor pentatonic (A C D E G) across a warm mid range, in Hz.
-const SCALE = [220.0, 261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33];
-const ROOT = 110.0; // A2 drone
+// i – bVI – bIII – bVII in A minor: emotive yet fully consonant.
+// Each chord = a low bass note + four arpeggio tones (chord tones only).
+const CHORDS: { bass: number; arp: number[] }[] = [
+  { bass: 110.0, arp: [220.0, 261.63, 329.63, 440.0] }, // Am  (A C E)
+  { bass: 87.31, arp: [174.61, 220.0, 261.63, 349.23] }, // F   (F A C)
+  { bass: 130.81, arp: [261.63, 329.63, 392.0, 523.25] }, // C   (C E G)
+  { bass: 98.0, arp: [196.0, 246.94, 293.66, 392.0] }, // G   (G B D)
+];
 
-const STEP_DUR = 0.55; // seconds between melodic steps (meditative tempo)
-const LOOKAHEAD = 0.3; // schedule notes this far ahead (s)
-const TICK_MS = 25; // scheduler resolution
+const STEP = 0.62; // seconds per arpeggio step (calm tempo)
+const STEPS_PER_CHORD = 4;
+const LOOKAHEAD = 0.4;
+const TICK_MS = 30;
 
-let master: GainNode | null = null;
-let drone: { osc: OscillatorNode; gain: GainNode } | null = null;
 let timer: ReturnType<typeof setInterval> | null = null;
 let nextTime = 0;
 let step = 0;
 
-function scheduleStep(ctx: AudioContext, when: number): void {
-  // Breathe: rest on every 8th step so the loop never feels mechanical.
-  if (step % 8 === 7) {
-    step++;
-    return;
-  }
-  const f = SCALE[Math.floor(Math.random() * SCALE.length)];
+let master: GainNode | null = null;
+let lp: BiquadFilterNode | null = null;
+let delay: DelayNode | null = null;
+let feedback: GainNode | null = null;
 
-  const o = ctx.createOscillator();
+/** One warm voice: two slightly-detuned sines through a soft AD envelope,
+ *  routed dry to the master bus and as a send into the echo delay. */
+function voice(ctx: AudioContext, freq: number, when: number, dur: number, peak: number): void {
+  if (!master || !delay) return;
   const g = ctx.createGain();
-  o.type = 'triangle';
-  o.frequency.value = f;
-  o.connect(g);
-  g.connect(master!);
   g.gain.setValueAtTime(0.0001, when);
-  g.gain.exponentialRampToValueAtTime(0.12, when + 0.25);
-  g.gain.exponentialRampToValueAtTime(0.0001, when + 1.6);
-  o.start(when);
-  o.stop(when + 1.7);
-
-  // Soft harmonic fifth on the downbeats for a fuller, calmer texture.
-  if (step % 4 === 0) {
-    const o2 = ctx.createOscillator();
-    const g2 = ctx.createGain();
-    o2.type = 'sine';
-    o2.frequency.value = f * 1.5;
-    o2.connect(g2);
-    g2.connect(master!);
-    g2.gain.setValueAtTime(0.0001, when);
-    g2.gain.exponentialRampToValueAtTime(0.05, when + 0.3);
-    g2.gain.exponentialRampToValueAtTime(0.0001, when + 1.4);
-    o2.start(when);
-    o2.stop(when + 1.5);
+  g.gain.exponentialRampToValueAtTime(peak, when + 0.09);
+  g.gain.setValueAtTime(peak, when + dur * 0.5);
+  g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+  for (const detune of [-5, 5]) {
+    const o = ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = freq;
+    o.detune.value = detune;
+    o.connect(g);
+    o.start(when);
+    o.stop(when + dur + 0.05);
   }
+  g.connect(master);
+  g.connect(delay);
+}
+
+function scheduleStep(ctx: AudioContext, when: number): void {
+  const chord = CHORDS[Math.floor(step / STEPS_PER_CHORD) % CHORDS.length];
+  const beat = step % STEPS_PER_CHORD;
+
+  // Sustained bass once per chord (one "bar").
+  if (beat === 0) voice(ctx, chord.bass, when, STEP * STEPS_PER_CHORD * 0.95, 0.06);
+
+  // Gentle arpeggio; rest on the last beat of every other bar so it breathes.
+  const rest = beat === STEPS_PER_CHORD - 1 && Math.floor(step / STEPS_PER_CHORD) % 2 === 1;
+  if (!rest) voice(ctx, chord.arp[beat], when, STEP * 1.7, 0.085);
+
   step++;
 }
 
 function tick(ctx: AudioContext): void {
   while (nextTime < ctx.currentTime + LOOKAHEAD) {
     scheduleStep(ctx, nextTime);
-    nextTime += STEP_DUR;
+    nextTime += STEP;
   }
 }
 
@@ -76,30 +85,35 @@ export function startMusic(): void {
   if (ctx.state === 'suspended') void ctx.resume();
 
   const now = ctx.currentTime;
+
+  // Master bus → low-pass (warmth) → destination.
   master = ctx.createGain();
   master.gain.setValueAtTime(0.0001, now);
-  master.gain.exponentialRampToValueAtTime(0.6, now + 2.5); // gentle fade-in
-  master.connect(ctx.destination);
+  master.gain.exponentialRampToValueAtTime(0.5, now + 3); // slow fade-in
+  lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 1900;
+  lp.Q.value = 0.3;
+  master.connect(lp);
+  lp.connect(ctx.destination);
 
-  // Low root drone for grounding.
-  const osc = ctx.createOscillator();
-  const dg = ctx.createGain();
-  osc.type = 'sine';
-  osc.frequency.value = ROOT;
-  dg.gain.value = 0.06;
-  osc.connect(dg);
-  dg.connect(master);
-  osc.start(now);
-  drone = { osc, gain: dg };
+  // Echo/space: feedback delay whose wet return folds back into the master,
+  // so fading the master on stop silences the tails too.
+  delay = ctx.createDelay(1.0);
+  delay.delayTime.value = 0.34;
+  feedback = ctx.createGain();
+  feedback.gain.value = 0.3;
+  delay.connect(feedback);
+  feedback.connect(delay);
+  delay.connect(master);
 
   step = 0;
-  nextTime = now + 0.1;
+  nextTime = now + 0.15;
   timer = setInterval(() => tick(ctx), TICK_MS);
 }
 
 export function stopMusic(): void {
-  // Nothing playing and never started → don't lazily spin up an AudioContext
-  // (the start/stop effect calls this on mount when music is off).
+  // Idle and never started → don't lazily spin up an AudioContext.
   if (!timer && !master) return;
   if (timer) {
     clearInterval(timer);
@@ -110,25 +124,20 @@ export function stopMusic(): void {
   if (master && ctx) {
     master.gain.cancelScheduledValues(now);
     master.gain.setValueAtTime(Math.max(0.0001, master.gain.value), now);
-    master.gain.exponentialRampToValueAtTime(0.0001, now + 0.6); // fade-out
+    master.gain.exponentialRampToValueAtTime(0.0001, now + 0.8); // fade-out
   }
-  if (drone) {
-    try {
-      drone.osc.stop(now + 0.7);
-    } catch {
-      /* already stopped */
-    }
-    drone = null;
-  }
-  const m = master;
+  const dead = [master, lp, delay, feedback];
   master = null;
-  if (m) {
-    setTimeout(() => {
+  lp = null;
+  delay = null;
+  feedback = null;
+  setTimeout(() => {
+    for (const n of dead) {
       try {
-        m.disconnect();
+        n?.disconnect();
       } catch {
         /* ignore */
       }
-    }, 800);
-  }
+    }
+  }, 1000);
 }
