@@ -42,11 +42,11 @@
 <section class="screen">
   <header class="brand">
     <span class="logo" aria-hidden="true">🥋</span>
-    <span class="brand-name">Quiz Taekwon-Do</span>
+    <span class="brand-name">Taekwon-Do ITF</span>
   </header>
 
-  <h1 class="hero-title">Pronto per l'esame?</h1>
-  <p class="hero-sub">Scegli la cintura e il livello, poi vai. 🥋</p>
+  <h1 class="hero-title">Esame Cinture</h1>
+  <p class="hero-sub">Quiz d'allenamento · storia, coreano, principi e forme</p>
 
   <AuthBar />
 
