@@ -23,3 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 .env.local
+
+# local scratch / smoke-test scripts (never committed)
+/shot.mjs
+/smoke.mjs
+/diag.mjs
+/vtest.mjs
