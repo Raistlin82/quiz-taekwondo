@@ -30,6 +30,7 @@ class AuthStore {
   ready = $state(false);
   status = $state<SaveStatus>('idle');
   message = $state<string | null>(null);
+  private authSub: { unsubscribe: () => void } | null = null;
 
   /** Auth is wired up at all (Supabase client present). */
   get available(): boolean {
@@ -58,6 +59,12 @@ class AuthStore {
 
   /** Set the active user and (re)bind progress cloud-sync to it. */
   private applyUser(u: User | null): void {
+    // Collapse duplicate same-id events (Supabase fires INITIAL_SESSION and
+    // SIGNED_IN for the same anon id) so progress isn't re-fetched/re-merged. (bug-hunt)
+    if (u?.id === this.user?.id) {
+      this.user = u;
+      return;
+    }
     this.user = u;
     void progressStore.attachUser(u?.id ?? null);
   }
@@ -71,11 +78,12 @@ class AuthStore {
     try {
       const { data } = await supabase.auth.getSession();
       this.applyUser(data.session?.user ?? null);
-      supabase.auth.onAuthStateChange((_event, session) => {
+      const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
         this.applyUser(session?.user ?? null);
         // A returning magic-link login confirms the "saved" state.
         if (this.isLoggedIn && this.status !== 'idle') this.status = 'idle';
       });
+      this.authSub = sub.subscription;
       // No session yet → start an anonymous (guest) one so scores get a stable id.
       if (!this.user) {
         const { data: anon } = await supabase.auth.signInAnonymously();
@@ -149,6 +157,9 @@ class AuthStore {
     this.message = null;
     try {
       await supabase.auth.signOut();
+      // Drop the permanent account's progress before binding a fresh guest, so
+      // it isn't merged into / pushed to the new anonymous cloud row. (bug-hunt)
+      progressStore.resetForSignOut();
       const { data } = await supabase.auth.signInAnonymously();
       this.applyUser(data.user ?? null);
     } catch {

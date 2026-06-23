@@ -167,6 +167,6 @@
     color: var(--verde-d, var(--verde));
   }
   .msg.err {
-    color: var(--amber-ink);
+    color: var(--rosso-d, var(--rosso));
   }
 </style>

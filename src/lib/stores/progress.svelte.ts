@@ -296,7 +296,16 @@ class ProgressStore {
     }
     const switching = this.cloudUserId !== userId;
     this.cloudUserId = userId;
-    const cloud = await fetchCloudProgress(userId);
+    let cloud: ProgressData | null = null;
+    try {
+      cloud = await fetchCloudProgress(userId);
+    } catch {
+      // Read failed (network/RLS). Don't seed local-only data over the unread
+      // cloud row — leave it untouched; a later persist() pushes once merged. (bug-hunt)
+      return;
+    }
+    // A newer attachUser (a different user) superseded this one while we awaited. (bug-hunt)
+    if (this.cloudUserId !== userId) return;
     if (cloud) {
       this.data = mergeProgress(this.data, sanitize(cloud));
       this.persistLocal();
@@ -304,6 +313,19 @@ class ProgressStore {
     // Ensure the row exists / reflects the merged state. Push immediately on a
     // fresh bind so a new device's empty cloud row gets seeded right away.
     this.queueCloudPush(switching);
+  }
+
+  /** Drop in-memory progress to a guest baseline (used on sign-out) so a
+   *  permanent account's data is never carried into the next anonymous cloud
+   *  row. Cancels any pending push first. (bug-hunt) */
+  resetForSignOut(): void {
+    if (this.pushTimer) {
+      clearTimeout(this.pushTimer);
+      this.pushTimer = null;
+    }
+    this.cloudUserId = null;
+    this.data = emptyProgress();
+    this.persistLocal();
   }
 
   /** Schedule (debounced) a push of the current progress to the cloud. */

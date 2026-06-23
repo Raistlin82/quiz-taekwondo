@@ -135,9 +135,12 @@ class GameStore {
 
   /** Build a review session from SRS-due questions (study mode). */
   private buildReview(limit = 15): Question[] {
-    const due = new Set(progressStore.dueKeys());
-    const items = POOL.filter((q) => due.has(qKey(q)));
-    return shuffle(items).slice(0, limit).map(shuffleOptions);
+    // dueKeys() is sorted most-overdue-first; slice the KEYS (not the shuffled
+    // items) so truncation always keeps the most urgent cards. Shuffle then only
+    // randomises presentation order. (bug-hunt)
+    const chosen = new Set(progressStore.dueKeys().slice(0, limit));
+    const items = POOL.filter((q) => chosen.has(qKey(q)));
+    return shuffle(items).map(shuffleOptions);
   }
 
   private resetCounters(): void {
@@ -216,10 +219,15 @@ class GameStore {
       this.score += 1;
       this.streak += 1;
       this.maxStreak = Math.max(this.maxStreak, this.streak);
-      const gain = answerXp(this.timeLeft);
-      this.lastGain = gain;
-      this.gameXp += gain;
-      if (this.timeLeft > 7) this.fastCount += 1;
+      // Review mode is intentionally XP-free (endGame hardcodes xpGained: 0 and
+      // never calls recordGame). Gate the accumulation so the live "+XP" popup
+      // can't promise XP that is then discarded. (bug-hunt)
+      if (!this.isReview) {
+        const gain = answerXp(this.timeLeft);
+        this.lastGain = gain;
+        this.gameXp += gain;
+        if (this.timeLeft > 7) this.fastCount += 1;
+      }
       this.correctKeys.push(qKey(q));
       playSound('good', themeStore.sound);
       vibrate(30, themeStore.haptics);

@@ -5,7 +5,16 @@
 
 import { prefersReducedMotion } from './motion';
 
-const COLORS = ['#c0432c', '#c79a3e', '#6b8f71', '#8a5a3c', '#e0a86a', '#5f9e8c'];
+/** DOJANG palette read from the active theme tokens (so light/dark stay in
+ *  sync); falls back to the light-theme hexes if unavailable. (bug-hunt) */
+function palette(): string[] {
+  const fallback = ['#2563eb', '#16a34a', '#f59e0b', '#dc2626', '#0ea5e9', '#6366f1'];
+  if (typeof document === 'undefined') return fallback;
+  const s = getComputedStyle(document.documentElement);
+  const tokens = ['--primary', '--success', '--accent-warm', '--danger', '--teal', '--viola'];
+  const colors = tokens.map((t, i) => s.getPropertyValue(t).trim() || fallback[i]);
+  return colors.every((c) => c) ? colors : fallback;
+}
 
 interface Part {
   x: number;
@@ -44,6 +53,7 @@ function resize(): void {
 function spawn(n: number, big: boolean, ox?: number, oy?: number): void {
   const cx = ox ?? window.innerWidth / 2;
   const cy = oy ?? window.innerHeight / 2 - 60;
+  const colors = palette();
   for (let i = 0; i < n; i++) {
     parts.push({
       x: cx + (Math.random() - 0.5) * 120,
@@ -52,7 +62,7 @@ function spawn(n: number, big: boolean, ox?: number, oy?: number): void {
       vy: Math.random() * -1 - (big ? 7 : 5),
       g: 0.22,
       s: Math.random() * 7 + 4,
-      c: COLORS[Math.floor(Math.random() * COLORS.length)],
+      c: colors[Math.floor(Math.random() * colors.length)],
       rot: Math.random() * 6,
       vr: (Math.random() - 0.5) * 0.3,
       life: big ? 120 : 70,

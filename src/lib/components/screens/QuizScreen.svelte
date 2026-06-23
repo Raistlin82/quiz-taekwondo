@@ -51,7 +51,7 @@
       {/if}
       ⭐ {gameStore.score}
     </span>
-    {#if gameStore.answered && isCorrect}
+    {#if gameStore.answered && isCorrect && !gameStore.isReview}
       {#key gameStore.idx}
         <span class="xp-pop">+{gameStore.lastGain} XP</span>
       {/key}
@@ -95,7 +95,7 @@
         transition:fly={{ y: 8, duration: motionMs(200) }}
       >
         {#if isCorrect}
-          <span class="h">✅ Esatto! {praise} <span class="xp">+{gameStore.lastGain} XP</span></span>
+          <span class="h">✅ Esatto! {praise}{#if !gameStore.isReview} <span class="xp">+{gameStore.lastGain} XP</span>{/if}</span>
           {q.explain}
         {:else}
           <span class="h">{timedOut ? '⏰ Tempo scaduto!' : 'Quasi!'}</span>
