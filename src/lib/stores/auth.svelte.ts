@@ -109,7 +109,12 @@ class AuthStore {
     this.message = null;
     try {
       if (this.isGuest) {
-        const { error } = await supabase.auth.updateUser({ email: clean });
+        // Pass the redirect explicitly: the email-change confirmation must land
+        // back on the app (full GH Pages subpath), not fall back to Site URL.
+        const { error } = await supabase.auth.updateUser(
+          { email: clean },
+          { emailRedirectTo: redirectTo() },
+        );
         if (error) throw error;
       } else {
         const { error } = await supabase.auth.signInWithOtp({
