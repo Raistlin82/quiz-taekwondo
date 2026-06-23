@@ -109,13 +109,24 @@ class AuthStore {
     this.message = null;
     try {
       if (this.isGuest) {
-        // Pass the redirect explicitly: the email-change confirmation must land
-        // back on the app (full GH Pages subpath), not fall back to Site URL.
+        // Try to convert the anonymous guest into a permanent account.
+        // Pass the redirect explicitly so the confirmation lands back on the
+        // app (full GH Pages subpath), not on Supabase's Site URL.
         const { error } = await supabase.auth.updateUser(
           { email: clean },
           { emailRedirectTo: redirectTo() },
         );
-        if (error) throw error;
+        if (error) {
+          // Most common case: that email already has an account (e.g. the user
+          // signed up before). Don't fail — send a normal sign-in magic link to
+          // the existing account. Its cloud progress loads on login and any
+          // local guest progress merges in (non-destructive).
+          const { error: signInErr } = await supabase.auth.signInWithOtp({
+            email: clean,
+            options: { emailRedirectTo: redirectTo() },
+          });
+          if (signInErr) throw signInErr;
+        }
       } else {
         const { error } = await supabase.auth.signInWithOtp({
           email: clean,
@@ -124,7 +135,7 @@ class AuthStore {
         if (error) throw error;
       }
       this.status = 'sent';
-      this.message = 'Ti ho inviato un link via email: aprilo per confermare e salvare i progressi.';
+      this.message = 'Ti ho inviato un link via email: aprilo per accedere e salvare i progressi.';
     } catch {
       this.status = 'error';
       this.message = 'Invio non riuscito. Riprova tra poco.';
