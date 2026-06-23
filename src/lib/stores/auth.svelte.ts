@@ -11,6 +11,7 @@
    ============================================================ */
 
 import { supabase } from '../config';
+import { progressStore } from './progress.svelte';
 import type { User } from '@supabase/supabase-js';
 
 type SaveStatus = 'idle' | 'sending' | 'sent' | 'error';
@@ -55,6 +56,12 @@ class AuthStore {
     return e ? e.split('@')[0].slice(0, 18) : null;
   }
 
+  /** Set the active user and (re)bind progress cloud-sync to it. */
+  private applyUser(u: User | null): void {
+    this.user = u;
+    void progressStore.attachUser(u?.id ?? null);
+  }
+
   /** Load any existing session, create a guest one, and subscribe to changes. */
   async init(): Promise<void> {
     if (!supabase) {
@@ -63,16 +70,16 @@ class AuthStore {
     }
     try {
       const { data } = await supabase.auth.getSession();
-      this.user = data.session?.user ?? null;
+      this.applyUser(data.session?.user ?? null);
       supabase.auth.onAuthStateChange((_event, session) => {
-        this.user = session?.user ?? null;
+        this.applyUser(session?.user ?? null);
         // A returning magic-link login confirms the "saved" state.
         if (this.isLoggedIn && this.status !== 'idle') this.status = 'idle';
       });
       // No session yet → start an anonymous (guest) one so scores get a stable id.
       if (!this.user) {
         const { data: anon } = await supabase.auth.signInAnonymously();
-        this.user = anon.user ?? null;
+        this.applyUser(anon.user ?? null);
       }
     } catch {
       /* Auth not configured/unreachable — stay in local mode. */
@@ -127,9 +134,9 @@ class AuthStore {
     try {
       await supabase.auth.signOut();
       const { data } = await supabase.auth.signInAnonymously();
-      this.user = data.user ?? null;
+      this.applyUser(data.user ?? null);
     } catch {
-      this.user = null;
+      this.applyUser(null);
     }
   }
 

@@ -113,6 +113,30 @@ create policy "inserimento proprio"
 > il punteggio anche prima della migrazione: se la colonna `user_id` non esiste
 > ancora, l'inserimento viene ritentato automaticamente senza di essa.
 
+### Salvataggio automatico dei progressi nel cloud
+XP, livello, badge e coda di ripasso si salvano in automatico nel cloud, legati
+all'utente (anonimo o permanente): al primo accesso vengono caricati e uniti a
+quelli locali, poi tenuti aggiornati ad ogni partita. Si ritrovano così su ogni
+dispositivo dopo aver collegato l'email. Crea la tabella una volta sola:
+
+```sql
+create table if not exists progress (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  data jsonb not null default '{}',
+  updated_at timestamptz not null default now()
+);
+alter table progress enable row level security;
+
+-- Ognuno legge/scrive SOLO la propria riga.
+create policy "progress: leggi i propri"  on progress for select using (auth.uid() = user_id);
+create policy "progress: crea i propri"   on progress for insert with check (auth.uid() = user_id);
+create policy "progress: aggiorna i propri" on progress for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+```
+
+> Se questa tabella non esiste, il sync cloud resta semplicemente inattivo e i
+> progressi continuano a salvarsi in locale (per dispositivo): nessun errore
+> bloccante.
+
 ## 📁 Struttura
 - `src/` — codice dell'app (componenti Svelte, store, dati, servizi)
 - `src/lib/data/questions.ts` — il banco domande

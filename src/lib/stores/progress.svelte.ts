@@ -6,6 +6,7 @@
 
 import { PROGRESS_KEY } from '../config';
 import { BADGES } from '../data/badges';
+import { fetchCloudProgress, pushCloudProgress } from '../services/progressSync';
 
 export interface SrsCard {
   box: number; // Leitner box 1..5 (higher = seen less often)
@@ -20,7 +21,7 @@ export interface CatStat {
 }
 type CatTally = Record<string, { total: number; correct: number }>;
 
-interface ProgressData {
+export interface ProgressData {
   xp: number;
   gamesPlayed: number;
   bestStreak: number;
@@ -48,8 +49,8 @@ const DAY = 24 * 60 * 60 * 1000;
 // Leitner intervals per box (box 1 = due ~immediately).
 const BOX_INTERVAL = [0, 0, 1 * DAY, 3 * DAY, 7 * DAY, 16 * DAY];
 
-function load(): ProgressData {
-  const base: ProgressData = {
+function emptyProgress(): ProgressData {
+  return {
     xp: 0,
     gamesPlayed: 0,
     bestStreak: 0,
@@ -59,26 +60,64 @@ function load(): ProgressData {
     srs: {},
     catStats: {},
   };
+}
+
+/** Coerce an arbitrary value (localStorage string or cloud JSONB) into ProgressData. */
+function sanitize(saved: unknown): ProgressData {
+  const base = emptyProgress();
+  if (!saved || typeof saved !== 'object') return base;
+  const s = saved as Record<string, unknown>;
+  const num = (v: unknown, d: number) => (Number.isFinite(v) ? (v as number) : d);
+  return {
+    xp: num(s.xp, 0),
+    gamesPlayed: num(s.gamesPlayed, 0),
+    bestStreak: num(s.bestStreak, 0),
+    fastAnswers: num(s.fastAnswers, 0),
+    studySessions: num(s.studySessions, 0),
+    badges: Array.isArray(s.badges) ? (s.badges.filter((b) => typeof b === 'string') as string[]) : [],
+    srs: s.srs && typeof s.srs === 'object' && !Array.isArray(s.srs) ? (s.srs as Record<string, SrsCard>) : {},
+    catStats:
+      s.catStats && typeof s.catStats === 'object' && !Array.isArray(s.catStats)
+        ? (s.catStats as CatTally)
+        : {},
+  };
+}
+
+function load(): ProgressData {
   try {
-    const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '');
-    if (!saved || typeof saved !== 'object') return base;
-    const num = (v: unknown, d: number) => (Number.isFinite(v) ? (v as number) : d);
-    return {
-      xp: num(saved.xp, 0),
-      gamesPlayed: num(saved.gamesPlayed, 0),
-      bestStreak: num(saved.bestStreak, 0),
-      fastAnswers: num(saved.fastAnswers, 0),
-      studySessions: num(saved.studySessions, 0),
-      badges: Array.isArray(saved.badges) ? saved.badges.filter((b: unknown) => typeof b === 'string') : [],
-      srs: saved.srs && typeof saved.srs === 'object' && !Array.isArray(saved.srs) ? saved.srs : {},
-      catStats:
-        saved.catStats && typeof saved.catStats === 'object' && !Array.isArray(saved.catStats)
-          ? saved.catStats
-          : {},
-    };
+    return sanitize(JSON.parse(localStorage.getItem(PROGRESS_KEY) || ''));
   } catch {
-    return base;
+    return emptyProgress();
   }
+}
+
+/**
+ * Non-destructive merge of two progress snapshots (e.g. local + cloud), taking
+ * the better of each so a sign-in/sync never loses earned XP, badges or cards.
+ */
+function mergeProgress(a: ProgressData, b: ProgressData): ProgressData {
+  const srs: Record<string, SrsCard> = { ...a.srs };
+  for (const [k, c] of Object.entries(b.srs)) {
+    const cur = srs[k];
+    // Keep the more-advanced card (higher Leitner box); tie → the later due date.
+    if (!cur || c.box > cur.box || (c.box === cur.box && c.due > cur.due)) srs[k] = c;
+  }
+  const catStats: CatTally = { ...a.catStats };
+  for (const [cat, v] of Object.entries(b.catStats)) {
+    const cur = catStats[cat];
+    // Keep the richer tally (more answers recorded).
+    if (!cur || v.total > cur.total) catStats[cat] = v;
+  }
+  return {
+    xp: Math.max(a.xp, b.xp),
+    gamesPlayed: Math.max(a.gamesPlayed, b.gamesPlayed),
+    bestStreak: Math.max(a.bestStreak, b.bestStreak),
+    fastAnswers: Math.max(a.fastAnswers, b.fastAnswers),
+    studySessions: Math.max(a.studySessions, b.studySessions),
+    badges: Array.from(new Set([...a.badges, ...b.badges])),
+    srs,
+    catStats,
+  };
 }
 
 /** XP for a single correct answer given seconds remaining (0..10). */
@@ -103,6 +142,10 @@ export function levelFromXp(xp: number): { level: number; into: number; need: nu
 
 class ProgressStore {
   data = $state<ProgressData>(load());
+
+  /** Current Supabase user id once auth resolves; null = local-only mode. */
+  private cloudUserId: string | null = null;
+  private pushTimer: ReturnType<typeof setTimeout> | null = null;
 
   get xp() {
     return this.data.xp;
@@ -241,12 +284,52 @@ class ProgressStore {
     return BADGES.length;
   }
 
-  private persist(): void {
+  /**
+   * Bind progress to a Supabase user (called by the auth store when the
+   * session resolves or changes). Loads the cloud row, merges it with local
+   * progress (no data loss), then keeps the cloud copy up to date. Best-effort.
+   */
+  async attachUser(userId: string | null): Promise<void> {
+    if (!userId) {
+      this.cloudUserId = null;
+      return;
+    }
+    const switching = this.cloudUserId !== userId;
+    this.cloudUserId = userId;
+    const cloud = await fetchCloudProgress(userId);
+    if (cloud) {
+      this.data = mergeProgress(this.data, sanitize(cloud));
+      this.persistLocal();
+    }
+    // Ensure the row exists / reflects the merged state. Push immediately on a
+    // fresh bind so a new device's empty cloud row gets seeded right away.
+    this.queueCloudPush(switching);
+  }
+
+  /** Schedule (debounced) a push of the current progress to the cloud. */
+  private queueCloudPush(immediate = false): void {
+    const userId = this.cloudUserId;
+    if (!userId) return;
+    if (this.pushTimer) {
+      clearTimeout(this.pushTimer);
+      this.pushTimer = null;
+    }
+    const run = () => void pushCloudProgress(userId, this.data);
+    if (immediate) run();
+    else this.pushTimer = setTimeout(run, 1500);
+  }
+
+  private persistLocal(): void {
     try {
       localStorage.setItem(PROGRESS_KEY, JSON.stringify(this.data));
     } catch {
       /* ignore */
     }
+  }
+
+  private persist(): void {
+    this.persistLocal();
+    this.queueCloudPush();
   }
 }
 
