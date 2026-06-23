@@ -23,13 +23,14 @@ function initialTheme(): ThemeName {
 interface Settings {
   sound: boolean;
   haptics: boolean;
+  music: boolean;
 }
 function initialSettings(): Settings {
   try {
     const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '');
-    return { sound: s.sound ?? true, haptics: s.haptics ?? true };
+    return { sound: s.sound ?? true, haptics: s.haptics ?? true, music: s.music ?? false };
   } catch {
-    return { sound: true, haptics: true };
+    return { sound: true, haptics: true, music: false };
   }
 }
 
@@ -37,6 +38,8 @@ class ThemeStore {
   theme = $state<ThemeName>(initialTheme());
   sound = $state(initialSettings().sound);
   haptics = $state(initialSettings().haptics);
+  // Background music is opt-in (off by default; browsers block autoplay anyway).
+  music = $state(initialSettings().music);
 
   apply(): void {
     document.documentElement.setAttribute('data-theme', this.theme);
@@ -55,6 +58,11 @@ class ThemeStore {
     this.persistSettings();
   }
 
+  toggleMusic(): void {
+    this.music = !this.music;
+    this.persistSettings();
+  }
+
   private persist(): void {
     try {
       localStorage.setItem(THEME_KEY, this.theme);
@@ -64,7 +72,10 @@ class ThemeStore {
   }
   private persistSettings(): void {
     try {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify({ sound: this.sound, haptics: this.haptics }));
+      localStorage.setItem(
+        SETTINGS_KEY,
+        JSON.stringify({ sound: this.sound, haptics: this.haptics, music: this.music }),
+      );
     } catch {
       /* ignore */
     }

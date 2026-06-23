@@ -7,6 +7,20 @@
 
 let actx: AudioContext | null = null;
 
+/** Shared AudioContext (lazily created). Returns null when Web Audio is
+ *  unavailable. Reused by both the SFX here and the background music engine. */
+export function getAudioContext(): AudioContext | null {
+  try {
+    const AC =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    actx = actx || new AC();
+    return actx;
+  } catch {
+    return null;
+  }
+}
+
 export type SoundType = 'good' | 'bad' | 'tick' | 'win' | 'levelup' | 'badge';
 
 interface Note {
@@ -59,12 +73,9 @@ function notes(type: SoundType): Note[] {
 export function playSound(type: SoundType, enabled: boolean): void {
   if (!enabled) return;
   try {
-    const AC =
-      window.AudioContext ||
-      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    actx = actx || new AC();
-    if (actx.state === 'suspended') void actx.resume();
-    const ctx = actx;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') void ctx.resume();
     for (const n of notes(type)) {
       const dur = n.d ?? 0.18;
       const peak = n.gain ?? 0.2;

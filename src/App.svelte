@@ -2,7 +2,15 @@
   import { fade } from 'svelte/transition';
   import { gameStore } from './lib/stores/game.svelte';
   import { themeStore } from './lib/stores/theme.svelte';
+  import { startMusic, stopMusic } from './lib/music';
   import { motionMs } from './lib/motion';
+
+  // Drive the background-music engine off the persisted setting. Toggling the
+  // 🎵 button is a user gesture, so the AudioContext can resume and play.
+  $effect(() => {
+    if (themeStore.music) startMusic();
+    else stopMusic();
+  });
   import StartScreen from './lib/components/screens/StartScreen.svelte';
   import QuizScreen from './lib/components/screens/QuizScreen.svelte';
   import EndScreen from './lib/components/screens/EndScreen.svelte';
@@ -19,6 +27,16 @@
     </button>
     <button class="icon-btn" title="Suono on/off" aria-label="Suono" onclick={() => themeStore.toggleSound()}>
       {themeStore.sound ? '🔊' : '🔇'}
+    </button>
+    <button
+      class="icon-btn"
+      class:off={!themeStore.music}
+      title="Musica di sottofondo on/off"
+      aria-label="Musica di sottofondo"
+      aria-pressed={themeStore.music}
+      onclick={() => themeStore.toggleMusic()}
+    >
+      🎵
     </button>
   </div>
 

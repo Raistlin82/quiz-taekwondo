@@ -319,6 +319,10 @@ button:active {
   justify-content: center;
   border: 1px solid var(--border);
 }
+/* dim a toggle that is currently off (e.g. background music) */
+.icon-btn.off {
+  opacity: 0.45;
+}
 
 /* ---- Accessibility primitives ---- */
 :focus-visible {
