@@ -109,12 +109,14 @@ export async function submitAndFetch(
     // may not exist yet. Try richest body first, then degrade so the online
     // board keeps working before the DB migrations are applied.
     const { secs, ...base } = entry;
-    const opt: Record<string, unknown> = {};
-    if (userId) opt.user_id = userId;
-    if (secs != null) opt.secs = secs;
-    const candidates: Record<string, unknown>[] = [{ ...base, ...opt }];
-    if (userId && secs != null) candidates.push({ ...base, user_id: userId }); // drop secs
-    candidates.push(base); // drop all optionals
+    // Try richest first, then degrade. CRUCIAL: keep `secs` when dropping
+    // `user_id` (the user_id row is rejected by RLS on anon-key requests, so we
+    // must not let that fallback also strip secs — that's the speed tiebreak).
+    const candidates: Record<string, unknown>[] = [];
+    if (userId && secs != null) candidates.push({ ...base, user_id: userId, secs });
+    if (secs != null) candidates.push({ ...base, secs }); // keep secs even if user_id is refused
+    if (userId) candidates.push({ ...base, user_id: userId });
+    candidates.push(base);
 
     const postScore = (body: Record<string, unknown>) =>
       fetch(`${SUPABASE_URL}/rest/v1/scores`, {

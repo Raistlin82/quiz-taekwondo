@@ -18,6 +18,11 @@
   const pct = $derived(gameStore.pct);
   const beltName = $derived(beltById(gameStore.selBelt)?.name ?? '');
   const isReview = gameStore.isReview;
+  // A real name (not the default "Ospite") earns a place on the match board.
+  const isNamed = $derived.by(() => {
+    const n = gameStore.playerName.trim().toLowerCase();
+    return n.length > 0 && n !== 'ospite';
+  });
   const newBadges = $derived(gameStore.summary?.newBadges ?? []);
   const leveledTo = $derived(gameStore.summary?.leveledTo ?? null);
 
@@ -49,6 +54,10 @@
       loading = false;
       return;
     }
+    // A "real name" (not empty / not the default "Ospite") earns a place on the
+    // shared match board — even for guests. No name → local board only.
+    const nm = gameStore.playerName.trim();
+    const named = nm.length > 0 && nm.toLowerCase() !== 'ospite';
     submitAndFetch(
       {
         name: gameStore.playerName,
@@ -60,7 +69,7 @@
         secs: Math.round(gameStore.timeUsed * 10) / 10,
       },
       authStore.userId,
-      authStore.isLoggedIn, // guests stay on a local board, never the shared one
+      named, // online match board for any named player; unnamed "Ospite" stays local
     )
       .then((res) => {
         rows = res.rows;
@@ -72,8 +81,9 @@
       .catch(() => (error = 'Impossibile caricare la classifica.'))
       .finally(() => (loading = false));
 
-    // Career profile only for logged-in players — guests are never ranked.
-    if (authStore.isLoggedIn) {
+    // Career profile only for a logged-in player WITH a name — the players
+    // (career) board is account-only, and "Ospite" is never ranked anywhere.
+    if (authStore.isLoggedIn && named) {
       void recordProfileRun({
         name: gameStore.playerName,
         xp: progressStore.xp,
@@ -157,10 +167,15 @@
 
   {#if !isReview}
     <div class="lb-title">🏁 Classifica{#if groupLabel} · {groupLabel}{/if}</div>
-    {#if !authStore.isLoggedIn}
+    {#if !authStore.isLoggedIn && isNamed}
       <p class="guest-note">
-        🔒 Come ospite la classifica è solo su questo dispositivo. Accedi con
-        “💾 Salva i progressi” per entrare nella classifica online e nella carriera.
+        🏁 Sei nella classifica delle partite con il tuo nome. Accedi
+        (“💾 Salva i progressi”) per entrare anche nella Classifica Giocatori (carriera).
+      </p>
+    {:else if !authStore.isLoggedIn}
+      <p class="guest-note">
+        🔒 Stai giocando come Ospite: non compari in nessuna classifica. Inserisci un
+        nome per la classifica delle partite (e accedi per la carriera).
       </p>
     {/if}
     <Leaderboard {rows} {myId} {online} {loading} {error} />
