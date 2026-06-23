@@ -114,14 +114,14 @@ class AuthStore {
       const { data } = await supabase.auth.getSession();
       this.applyUser(data.session?.user ?? null);
 
-      if (authReturn) {
-        // Coming back from a magic link: the code exchange owns this load.
-        // Do NOT start a competing guest session (that was masking the login
-        // until a manual refresh); just tidy the URL.
-        cleanAuthReturnFromUrl();
-      } else if (!this.user) {
-        // Fresh visit, no session → start an anonymous (guest) one so scores
-        // and progress get a stable id.
+      // Coming back from a magic link: the code exchange (awaited by getSession
+      // above) owns this load — we must not race a guest session that masks the
+      // login. So only tidy the URL here.
+      if (authReturn) cleanAuthReturnFromUrl();
+      // Start a guest session whenever we STILL have none: a fresh visit, OR a
+      // failed/expired/consumed magic-link return (so the player isn't stranded
+      // session-less). Gating on !this.user can't clobber a successful login.
+      if (!this.user) {
         const { data: anon } = await supabase.auth.signInAnonymously();
         this.applyUser(anon.user ?? null);
       }

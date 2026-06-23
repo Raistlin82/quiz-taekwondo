@@ -141,13 +141,18 @@ export async function submitAndFetch(
     if (posted) {
       try {
         // Only this belt group's rows — boards are never mixed across colours.
+        // Don't order by pct server-side (the real ranking is difficulty-weighted
+        // points, computed client-side): a pct-based cap could drop a high-points
+        // low-accuracy row. Fetch the whole group, rank client-side, then bound.
         const inList = group.beltIds.join(',');
         const r2 = await fetch(
-          `${SUPABASE_URL}/rest/v1/scores?select=*&belt=in.(${inList})&order=pct.desc&limit=200`,
+          `${SUPABASE_URL}/rest/v1/scores?select=*&belt=in.(${inList})&order=created_at.desc&limit=1000`,
           { headers: sbHeaders() },
         );
         if (!r2.ok) throw new Error('get failed');
-        const rows = withPoints(dropJunk((await r2.json()) as ScoreRow[])).sort(rankRows);
+        const rows = withPoints(dropJunk((await r2.json()) as ScoreRow[]))
+          .sort(rankRows)
+          .slice(0, 100);
         return { rows, myId, online: true, groupLabel: group.label };
       } catch {
         // Submission succeeded; only the board read failed. Show what we have.

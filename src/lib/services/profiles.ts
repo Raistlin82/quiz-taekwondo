@@ -40,12 +40,23 @@ export interface RecordRunInput {
   colorLabel: string; // belt-group label (e.g. "Verde")
 }
 
+// Serialise career writes within this tab so the read-modify-write below can't
+// interleave on rapid replays (a later write reading stale cum_points and
+// overwriting an earlier one). Cross-tab/device races would need a server-side
+// atomic increment (RPC) — out of scope here.
+let writeChain: Promise<void> = Promise.resolve();
+
 /**
  * Update the player's career profile after a finished quiz: accumulates this
  * run's points (overall and per colour) and refreshes XP/level/trophies.
- * Read-modify-write on the single own row; safe enough for one player.
+ * Calls are serialised per tab to avoid lost updates.
  */
-export async function recordProfileRun(input: RecordRunInput): Promise<void> {
+export function recordProfileRun(input: RecordRunInput): Promise<void> {
+  writeChain = writeChain.then(() => doRecordProfileRun(input)).catch(() => {});
+  return writeChain;
+}
+
+async function doRecordProfileRun(input: RecordRunInput): Promise<void> {
   if (!supabase) return;
   try {
     const { data: sess } = await supabase.auth.getSession();
@@ -80,8 +91,12 @@ export async function recordProfileRun(input: RecordRunInput): Promise<void> {
   }
 }
 
-/** Top career profiles, ranked by composite score. Empty when unavailable. */
-export async function fetchTopProfiles(limit = 100): Promise<PlayerProfile[]> {
+/**
+ * Top career profiles, ranked by composite score.
+ * Returns [] for a confirmed-empty board, or null on a read ERROR (network/RLS)
+ * so the UI can tell "feature not set up yet" apart from "temporary glitch".
+ */
+export async function fetchTopProfiles(limit = 100): Promise<PlayerProfile[] | null> {
   if (!supabase) return [];
   try {
     const { data, error } = await supabase
@@ -89,10 +104,10 @@ export async function fetchTopProfiles(limit = 100): Promise<PlayerProfile[]> {
       .select('*')
       .order('career', { ascending: false })
       .limit(limit);
-    if (error || !data) return [];
-    return data as PlayerProfile[];
+    if (error) return null;
+    return (data ?? []) as PlayerProfile[];
   } catch {
-    return [];
+    return null;
   }
 }
 

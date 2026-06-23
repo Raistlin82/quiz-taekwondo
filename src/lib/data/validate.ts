@@ -20,7 +20,6 @@ export function validateQuestions(
   const warnings: string[] = [];
 
   const beltIds = new Set(belts.map((b) => b.id));
-  const maxLvl = Math.max(...Object.values(difficulties).map((d) => d.maxLvl));
   const facileCount = difficulties.facile.count;
 
   const catCounts = new Map<string, number>();
@@ -37,7 +36,6 @@ export function validateQuestions(
 
     if (!beltIds.has(q.belt)) errors.push(`${at}: belt ${q.belt} inesistente`);
     if (![1, 2, 3].includes(q.lvl)) errors.push(`${at}: lvl ${q.lvl} non valido (1..3)`);
-    else if (q.lvl > maxLvl) warnings.push(`${at}: lvl ${q.lvl} oltre il massimo difficoltà (${maxLvl})`);
 
     if (!Array.isArray(q.options) || q.options.length !== 4) {
       errors.push(`${at}: deve avere esattamente 4 opzioni (ne ha ${q.options?.length ?? 0})`);

@@ -8,10 +8,13 @@
   let rows = $state<PlayerProfile[]>([]);
   let me = $state<PlayerProfile | null>(null);
   let loading = $state(true);
-  let unavailable = $state(false);
+  let errored = $state(false);
+  let fetchedFor: string | null = null;
 
   const medals = ['🥇', '🥈', '🥉'];
-  const myId = authStore.userId;
+  // Reactive: auth resolves asynchronously (anonymous sign-in / magic-link
+  // return) and may settle AFTER this screen mounts.
+  const myId = $derived(authStore.userId);
 
   // Top 20, plus the player's own row if they rank lower.
   const display = $derived.by(() => {
@@ -21,15 +24,35 @@
     return top;
   });
 
+  // "Active but empty" — kept distinct from a network/read error.
+  const unavailable = $derived(!loading && !errored && rows.length === 0 && me == null);
+
   onMount(async () => {
     const top = await fetchTopProfiles(100);
-    rows = top;
-    if (myId) {
-      me = top.find((r) => r.user_id === myId) ?? (await fetchProfile(myId));
-    }
-    // If there's truly nothing and we have a session, the table is likely not set up.
-    unavailable = top.length === 0 && me == null;
+    if (top == null) errored = true;
+    else rows = top;
     loading = false;
+  });
+
+  // Resolve the player's own profile reactively once auth settles (and if the
+  // id changes). Fetches at most once per id.
+  $effect(() => {
+    const id = myId;
+    if (!id) {
+      me = null;
+      return;
+    }
+    const found = rows.find((r) => r.user_id === id);
+    if (found) {
+      me = found;
+      return;
+    }
+    if (fetchedFor !== id) {
+      fetchedFor = id;
+      void fetchProfile(id).then((p) => {
+        if (p) me = p;
+      });
+    }
   });
 </script>
 
@@ -68,6 +91,8 @@
 
   {#if loading}
     <div class="empty" role="status">Carico la classifica… ⏳</div>
+  {:else if errored}
+    <div class="empty" role="status">⚠️ Impossibile caricare la classifica ora. Riprova più tardi.</div>
   {:else if unavailable}
     <div class="empty" role="status">
       🏗️ Classifica giocatori non ancora attiva.<br />Gioca una partita (da loggato) per comparire.
@@ -95,7 +120,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 8px;
-    padding-right: 92px;
+    padding-right: var(--controls-gutter);
     min-height: 44px;
   }
   .restart-btn {

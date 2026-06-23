@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { gameStore } from '../../stores/game.svelte';
   import { progressStore } from '../../stores/progress.svelte';
   import { authStore } from '../../stores/auth.svelte';
@@ -9,11 +9,15 @@
 
   const lvl = $derived(progressStore.level);
 
-  // Prefill the player name from the signed-in account (only while the user
-  // hasn't typed their own name yet), so the leaderboard uses a consistent id.
+  // Prefill the player name from the signed-in account (auth resolves async,
+  // after mount). `untrack` keeps the effect dependent ONLY on displayName, so
+  // it runs when the account name arrives — not on every keystroke — and never
+  // re-fills the field after the user clears it.
   $effect(() => {
     const name = authStore.displayName;
-    if (name && !gameStore.playerName.trim()) gameStore.playerName = name;
+    if (name && !untrack(() => gameStore.playerName.trim())) {
+      gameStore.playerName = name;
+    }
   });
 
   // `tick` lets the due count re-evaluate on wall-clock events (a card can

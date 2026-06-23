@@ -75,6 +75,9 @@ class GameStore {
   summary = $state<EndSummary | null>(null);
 
   private correctKeys: string[] = [];
+  // SRS cards already graded in the CURRENT review session — prevents a
+  // "Ricomincia" replay from re-grading (and skewing) the Leitner boxes.
+  private gradedKeys = new Set<string>();
   private timerId: ReturnType<typeof setInterval> | null = null;
 
   get current(): Question | undefined {
@@ -155,6 +158,7 @@ class GameStore {
     this.timeUsed = 0;
     this.wrong = [];
     this.correctKeys = [];
+    this.gradedKeys.clear();
     this.summary = null;
   }
 
@@ -237,15 +241,25 @@ class GameStore {
       vibrate(30, themeStore.haptics);
       // burst from the score pill, bigger on streak milestones (U37)
       burst(scorePillOrigin(), this.streak >= 5 ? 30 : 18);
-      // In review mode, grade the SRS card immediately.
-      if (this.isReview) progressStore.reviewGraded(qKey(q), true);
+      // In review mode, grade each SRS card at most once per session (a restart
+      // replays the same set, but must not re-mutate the Leitner schedule).
+      this.gradeOnce(q, true);
     } else {
       this.streak = 0;
       this.wrong = [...this.wrong, q];
       playSound('bad', themeStore.sound);
       vibrate([40, 30, 40], themeStore.haptics);
-      if (this.isReview) progressStore.reviewGraded(qKey(q), false);
+      this.gradeOnce(q, false);
     }
+  }
+
+  /** Grade an SRS card once per review session (no-op outside review / on repeats). */
+  private gradeOnce(q: Question, correct: boolean): void {
+    if (!this.isReview) return;
+    const key = qKey(q);
+    if (this.gradedKeys.has(key)) return;
+    this.gradedKeys.add(key);
+    progressStore.reviewGraded(key, correct);
   }
 
   next(): void {
