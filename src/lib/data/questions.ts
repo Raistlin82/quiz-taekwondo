@@ -55,9 +55,9 @@ export const POOL: Question[] = [
   { cat: '🔢 Numeri Coreani', belt: 1, lvl: 2, q: "Quale numero è 'Net'?", options: ['Quattro', 'Due', 'Sei', 'Otto'], answer: 0, explain: 'Net = 4.' },
   { cat: '🔢 Numeri Coreani', belt: 1, lvl: 2, q: "Quale numero è 'Dasot'?", options: ['Cinque', 'Quattro', 'Sei', 'Otto'], answer: 0, explain: 'Dasot = 5.' },
   { cat: '🔢 Numeri Coreani', belt: 2, lvl: 2, q: "Quale numero è 'Yosot'?", options: ['Sei', 'Cinque', 'Sette', 'Nove'], answer: 0, explain: 'Yosot = 6.' },
-  { cat: '🔢 Numeri Coreani', belt: 2, lvl: 3, q: "Come si dice 'SETTE' in coreano?", options: ['Ilgop', 'Yodul', 'Yosot', 'Ahop'], answer: 0, explain: '7 = Ilgop.' },
-  { cat: '🔢 Numeri Coreani', belt: 2, lvl: 3, q: "Quale numero è 'Yodul'?", options: ['Otto', 'Sei', 'Nove', 'Quattro'], answer: 0, explain: 'Yodul = 8.' },
-  { cat: '🔢 Numeri Coreani', belt: 2, lvl: 3, q: "Quale numero è 'Ahop'?", options: ['Nove', 'Sette', 'Sei', 'Dieci'], answer: 0, explain: 'Ahop = 9.' },
+  { cat: '🔢 Numeri Coreani', belt: 2, lvl: 2, q: "Come si dice 'SETTE' in coreano?", options: ['Ilgop', 'Yodul', 'Yosot', 'Ahop'], answer: 0, explain: '7 = Ilgop.' },
+  { cat: '🔢 Numeri Coreani', belt: 2, lvl: 2, q: "Quale numero è 'Yodul'?", options: ['Otto', 'Sei', 'Nove', 'Quattro'], answer: 0, explain: 'Yodul = 8.' },
+  { cat: '🔢 Numeri Coreani', belt: 2, lvl: 2, q: "Quale numero è 'Ahop'?", options: ['Nove', 'Sette', 'Sei', 'Dieci'], answer: 0, explain: 'Ahop = 9.' },
   { cat: '🔢 Numeri Coreani', belt: 1, lvl: 2, q: "Quale numero è 'Yol'?", options: ['Dieci', 'Sette', 'Nove', 'Sei'], answer: 0, explain: 'Yol = 10.' },
 
   // ===== COMANDI =====
@@ -163,4 +163,24 @@ export const POOL: Question[] = [
   { cat: '📜 Storia & Teoria', belt: 4, lvl: 2, q: "Da quali parti è composto l'allenamento del Taekwon-Do?", options: ['Movimenti fondamentali, forme, combattimento, condizionamento e difesa personale', 'Solo forme e combattimento', 'Solo tecniche di calcio', 'Meditazione e respirazione'], answer: 0, explain: 'Le componenti: movimenti fondamentali, tul (forme), matsogi (combattimento), dallyon (condizionamento) e hosin sul (difesa personale).' },
   { cat: '📜 Storia & Teoria', belt: 5, lvl: 2, q: "Qual è la differenza tra 'Gup' e 'Dan'?", options: ['Gup = gradi delle cinture colorate, Dan = gradi della cintura nera', 'Gup è la palestra, Dan il maestro', 'Gup è il calcio, Dan il pugno', 'Sono sinonimi'], answer: 0, explain: 'I Gup vanno dal 10° al 1° (cinture colorate); i Dan dal 1° al 9° (cintura nera).' },
   { cat: '📜 Storia & Teoria', belt: 9, lvl: 3, q: 'Da quanti punti è composto il Giuramento (oath) del Taekwon-Do?', options: ['5', '3', '7', '10'], answer: 0, explain: "Cinque punti; il primo è: «Osserverò i principi del Taekwon-Do»." },
+
+  // ===== 2° LOTTO · BASE (Bianca sup. / Gialla) — molto semplici, lvl 1 =====
+  { cat: '📜 Storia & Teoria', belt: 1, lvl: 1, q: 'A cosa serve soprattutto il Taekwon-Do?', options: ['A difendersi', 'Ad aggredire gli altri', 'A litigare', 'A vincere sempre'], answer: 0, explain: "È un'arte di difesa personale: si usa per difendersi, mai per aggredire." },
+  { cat: '📣 Comandi', belt: 1, lvl: 1, q: 'Cosa si grida per dare forza a un colpo?', options: ['Kihap', 'Charyot', 'Junbi', 'Swiyo'], answer: 0, explain: "Il Kihap è l'urlo che concentra l'energia nel colpo." },
+  { cat: '📜 Storia & Teoria', belt: 1, lvl: 1, q: 'Cosa si fa entrando e uscendo dal Dojang (la palestra)?', options: ["Si fa l'inchino", 'Si corre', 'Si applaude', 'Niente'], answer: 0, explain: "Si saluta con l'inchino, per rispetto del luogo di allenamento." },
+  { cat: '🟢 Le Cinture', belt: 1, lvl: 1, q: 'Con quale cintura inizia chi è nuovo?', options: ['Bianca', 'Nera', 'Rossa', 'Gialla'], answer: 0, explain: "Si parte dalla cintura bianca, simbolo dell'allievo che inizia." },
+  { cat: '🧭 I 5 Principi', belt: 1, lvl: 1, q: 'Verso il maestro e i compagni come bisogna comportarsi?', options: ['Con cortesia e rispetto', 'Con indifferenza', 'Con aggressività', 'Con distrazione'], answer: 0, explain: 'La Cortesia (Ye Ui) è il primo principio: rispetto verso tutti.' },
+  { cat: '📣 Comandi', belt: 2, lvl: 1, q: 'Prima di un esercizio in coppia, cosa si fa con il compagno?', options: ["Ci si saluta con l'inchino", 'Si urla', 'Si gira le spalle', 'Si corre via'], answer: 0, explain: 'Ci si saluta (Kyong-Ye) per rispetto del compagno, prima e dopo.' },
+  { cat: '📜 Storia & Teoria', belt: 2, lvl: 1, q: 'Chi guida la lezione e va salutato per primo?', options: ["L'istruttore (maestro)", 'Il più giovane', 'Nessuno', 'Il più alto'], answer: 0, explain: "Si saluta l'istruttore (Sabum) a inizio e fine lezione." },
+
+  // ===== 2° LOTTO · CINTURE ALTE — difficoltà crescente (lvl 2-3) =====
+  { cat: '👊 Tecniche', belt: 4, lvl: 2, q: "Cosa significa 'Sewo Jirugi'?", options: ['Pugno verticale', 'Pugno girato', 'Calcio laterale', 'Parata bassa'], answer: 0, explain: "Sewo Jirugi = pugno verticale (il pugno resta in verticale all'impatto)." },
+  { cat: '📜 Storia & Teoria', belt: 7, lvl: 2, q: "Cosa significa 'Hosin Sul'?", options: ['Difesa personale', 'Combattimento libero', 'Rottura delle assi', 'Saluto iniziale'], answer: 0, explain: 'Hosin Sul = difesa personale, una delle componenti del Taekwon-Do.' },
+  { cat: '💪 Teoria della Potenza', belt: 5, lvl: 3, q: "Cosa significa 'Hohup Jojul' nella teoria della potenza?", options: ['Controllo del respiro', 'Forza di reazione', 'Concentrazione', 'Equilibrio'], answer: 0, explain: "Hohup Jojul = controllo del respiro: espirare all'impatto aumenta la potenza." },
+  { cat: '💪 Teoria della Potenza', belt: 6, lvl: 3, q: "Cosa indica 'Zilyang' nella teoria della potenza?", options: ['La massa (peso del corpo)', 'La velocità', 'Il respiro', "L'equilibrio"], answer: 0, explain: 'Zilyang = massa: usare il peso del corpo nel colpo aumenta la forza.' },
+  { cat: '👊 Tecniche', belt: 6, lvl: 2, q: "Cosa significa 'Bandal Chagi'?", options: ['Calcio a mezzaluna', 'Calcio in salto', 'Calcio indietro', 'Calcio frontale'], answer: 0, explain: 'Bandal = mezzaluna; è un calcio circolare corto che colpisce con la pianta/collo del piede.' },
+  { cat: '👊 Tecniche', belt: 7, lvl: 3, q: "Cosa significa 'Sambo Matsogi'?", options: ['Combattimento ai tre passi', 'Combattimento libero', 'Rottura delle assi', 'Forma a tre'], answer: 0, explain: 'Sambo Matsogi = combattimento prestabilito a tre passi, per allenare attacco e difesa.' },
+  { cat: '👊 Tecniche', belt: 8, lvl: 3, q: "Cosa significa 'Ilbo Matsogi'?", options: ['Combattimento a un passo', 'Combattimento a due passi', 'Combattimento libero', 'Difesa personale'], answer: 0, explain: 'Ilbo Matsogi = combattimento a un passo (un attacco e una difesa/contrattacco).' },
+  { cat: '👊 Tecniche', belt: 8, lvl: 3, q: "Cosa significa 'Jayu Matsogi'?", options: ['Combattimento libero', 'Combattimento a tre passi', 'Rottura', 'Forma'], answer: 0, explain: 'Jayu Matsogi = combattimento libero (sparring), senza schema prestabilito.' },
+  { cat: '👊 Tecniche', belt: 9, lvl: 3, q: "Cosa significa 'Gyok Pa'?", options: ['Rottura (prove di rottura)', 'Combattimento libero', 'Saluto', 'Posizione di pronto'], answer: 0, explain: 'Gyok Pa = rottura: il test di potenza spezzando assi o mattoni.' },
 ];

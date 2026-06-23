@@ -27,8 +27,8 @@ export interface Question {
   belt: number; // minimum belt at which the question appears
   lvl: 1 | 2 | 3; // difficulty tier
   q: string;
-  options: string[];
-  answer: number; // index into options
+  options: string[]; // exactly 4 — enforced at build time by validateQuestions()
+  answer: number; // index into options (0..3) — enforced by validateQuestions()
   explain: string;
 }
 
