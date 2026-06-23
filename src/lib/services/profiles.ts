@@ -63,6 +63,21 @@ async function doRecordProfileRun(input: RecordRunInput): Promise<void> {
     const uid = sess.session?.user?.id;
     if (!uid) return;
 
+    // Preferred path: atomic server-side increment (correct even across tabs
+    // and devices — no lost updates). Requires the increment_profile_run()
+    // Postgres function (see README); BADGE_BONUS there must match here.
+    const { error: rpcErr } = await supabase.rpc('increment_profile_run', {
+      p_name: input.name,
+      p_xp: input.xp,
+      p_level: input.level,
+      p_badges: input.badges,
+      p_run_points: input.runPoints,
+      p_color: input.colorLabel,
+    });
+    if (!rpcErr) return;
+
+    // Fallback (function not created yet): read-modify-write. recordProfileRun
+    // serialises calls per tab, so this is safe within a tab.
     const { data: existing } = await supabase
       .from('profiles')
       .select('cum_points,by_color')

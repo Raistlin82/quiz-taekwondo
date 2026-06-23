@@ -176,6 +176,39 @@ create policy "profiles: aggiorna i propri" on profiles for update using (auth.u
 > ("non ancora attiva"): nessun errore bloccante. Il cumulato per colore parte
 > dal momento dell'attivazione (le partite successive si accumulano).
 
+**(Consigliato) incremento atomico dei punti carriera.** Per evitare che due
+partite ravvicinate (anche su dispositivi/tab diversi) si sovrascrivano i punti
+cumulati, crea questa funzione: l'app la usa in automatico e, se manca, ricade
+sul vecchio read-modify-write. Il `200` è il bonus per trofeo e **deve
+combaciare** con `BADGE_BONUS` in `src/lib/services/profiles.ts`.
+
+```sql
+create or replace function increment_profile_run(
+  p_name text, p_xp int, p_level int, p_badges int, p_run_points int, p_color text
+) returns void
+language plpgsql security invoker
+as $$
+begin
+  insert into profiles (user_id, name, xp, level, badges, cum_points, by_color, career, updated_at)
+  values (
+    auth.uid(), p_name, p_xp, p_level, p_badges, p_run_points,
+    jsonb_build_object(p_color, p_run_points),
+    p_xp + p_badges * 200 + p_run_points, now()
+  )
+  on conflict (user_id) do update set
+    name = excluded.name, xp = excluded.xp, level = excluded.level, badges = excluded.badges,
+    cum_points = profiles.cum_points + p_run_points,
+    by_color = jsonb_set(
+      coalesce(profiles.by_color, '{}'::jsonb), array[p_color],
+      to_jsonb(coalesce((profiles.by_color->>p_color)::int, 0) + p_run_points)
+    ),
+    career = p_xp + p_badges * 200 + (profiles.cum_points + p_run_points),
+    updated_at = now();
+end;
+$$;
+grant execute on function increment_profile_run(text, int, int, int, int, text) to authenticated, anon;
+```
+
 ## 📁 Struttura
 - `src/` — codice dell'app (componenti Svelte, store, dati, servizi)
 - `src/lib/data/questions.ts` — il banco domande
