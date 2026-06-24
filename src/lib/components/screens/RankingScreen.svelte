@@ -3,56 +3,33 @@
   import { gameStore } from '../../stores/game.svelte';
   import { authStore } from '../../stores/auth.svelte';
   import { BELT_GROUPS } from '../../data/belts';
-  import { fetchTopProfiles, fetchProfile, type PlayerProfile } from '../../services/profiles';
+  import { fetchCareerBoard, type CareerEntry } from '../../services/profiles';
 
-  let rows = $state<PlayerProfile[]>([]);
-  let me = $state<PlayerProfile | null>(null);
+  let rows = $state<CareerEntry[]>([]);
   let loading = $state(true);
   let errored = $state(false);
-  let fetchedFor: string | null = null;
 
   const medals = ['🥇', '🥈', '🥉'];
-  // Reactive: auth resolves asynchronously (anonymous sign-in / magic-link
-  // return) and may settle AFTER this screen mounts.
-  const myId = $derived(authStore.userId);
+  // The board is keyed by NAME (aggregated from scores). Identify the current
+  // player by their display/guest name; auth may resolve after mount.
+  const myName = $derived((authStore.displayName ?? gameStore.playerName ?? '').trim());
+  const me = $derived.by(() => (myName ? (rows.find((r) => r.name === myName) ?? null) : null));
 
   // Top 20, plus the player's own row if they rank lower.
   const display = $derived.by(() => {
     const top = rows.slice(0, 20).map((r, i) => ({ row: r, rank: i }));
-    const myIndex = rows.findIndex((r) => r.user_id === myId);
+    const myIndex = myName ? rows.findIndex((r) => r.name === myName) : -1;
     if (myIndex >= 20) top.push({ row: rows[myIndex], rank: myIndex });
     return top;
   });
 
-  // "Active but empty" — kept distinct from a network/read error.
-  const unavailable = $derived(!loading && !errored && rows.length === 0 && me == null);
+  const unavailable = $derived(!loading && !errored && rows.length === 0);
 
   onMount(async () => {
-    const top = await fetchTopProfiles(100);
-    if (top == null) errored = true;
-    else rows = top;
+    const board = await fetchCareerBoard();
+    if (board == null) errored = true;
+    else rows = board;
     loading = false;
-  });
-
-  // Resolve the player's own profile reactively once auth settles (and if the
-  // id changes). Fetches at most once per id.
-  $effect(() => {
-    const id = myId;
-    if (!id) {
-      me = null;
-      return;
-    }
-    const found = rows.find((r) => r.user_id === id);
-    if (found) {
-      me = found;
-      return;
-    }
-    if (fetchedFor !== id) {
-      fetchedFor = id;
-      void fetchProfile(id).then((p) => {
-        if (p) me = p;
-      });
-    }
   });
 </script>
 
@@ -64,7 +41,7 @@
   <h1 class="title">Classifica <span class="grad">Giocatori</span></h1>
   <p class="sub">Punteggio carriera = XP + trofei + punti cumulati</p>
   {#if !authStore.isLoggedIn}
-    <p class="guest-hint">🔒 Solo i giocatori con account compaiono in classifica. Accedi per partecipare.</p>
+    <p class="guest-hint">🔒 Contano i punti delle tue partite. Accedi (“Salva i progressi”) per sommare anche XP e trofei alla tua carriera.</p>
   {/if}
 
   {#if me}
@@ -77,11 +54,11 @@
         <span class="stat">Lv {me.level}</span>
         <span class="stat">✨ {me.xp} XP</span>
         <span class="stat">🏆 {me.badges}</span>
-        <span class="stat">🎯 {me.cum_points} pt</span>
+        <span class="stat">🎯 {me.cumPoints} pt</span>
       </div>
       <div class="by-color">
         {#each BELT_GROUPS as g (g.key)}
-          {@const pts = me.by_color?.[g.label] ?? 0}
+          {@const pts = me.byColor?.[g.label] ?? 0}
           <div class="cc" class:zero={pts === 0}>
             <span class="dot" style="background:{g.color}"></span>
             <span class="cc-label">{g.label}</span>
@@ -104,8 +81,8 @@
     <div class="empty" role="status">Ancora nessun giocatore in classifica. Sii il primo! 🥇</div>
   {:else}
     <div role="list" class="list">
-      {#each display as { row, rank } (row.user_id)}
-        {@const mine = row.user_id === myId}
+      {#each display as { row, rank } (row.name)}
+        {@const mine = row.name === myName}
         <div class="row" class:me={mine} role="listitem" aria-current={mine ? 'true' : undefined}>
           <span class="rank">{medals[rank] ?? rank + 1}</span>
           <span class="name">{row.name || 'Anonimo'}{#if mine}<span class="sr-only"> (tu)</span>{/if}</span>

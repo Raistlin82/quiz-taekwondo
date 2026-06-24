@@ -169,13 +169,13 @@
     <div class="lb-title">🏁 Classifica{#if groupLabel} · {groupLabel}{/if}</div>
     {#if !authStore.isLoggedIn && isNamed}
       <p class="guest-note">
-        🏁 Sei nella classifica delle partite con il tuo nome. Accedi
-        (“💾 Salva i progressi”) per entrare anche nella Classifica Giocatori (carriera).
+        🏁 Sei in classifica (partite e giocatori) con il tuo nome. Accedi
+        (“💾 Salva i progressi”) per sommare anche XP e trofei alla tua carriera.
       </p>
     {:else if !authStore.isLoggedIn}
       <p class="guest-note">
         🔒 Stai giocando come Ospite: non compari in nessuna classifica. Inserisci un
-        nome per la classifica delle partite (e accedi per la carriera).
+        nome per entrare in classifica (e accedi per sommare XP e trofei).
       </p>
     {/if}
     <Leaderboard {rows} {myId} {online} {loading} {error} />

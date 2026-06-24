@@ -11,6 +11,7 @@
    ============================================================ */
 
 import { supabase } from '../config';
+import { beltGroupOf, leaderboardPoints } from '../data/belts';
 
 const BADGE_BONUS = 200; // each trophy is worth this much career score
 
@@ -122,6 +123,74 @@ export async function fetchTopProfiles(limit = 100): Promise<PlayerProfile[] | n
       .limit(limit);
     if (error) return null;
     return (data ?? []) as PlayerProfile[];
+  } catch {
+    return null;
+  }
+}
+
+export interface CareerEntry {
+  name: string;
+  career: number;
+  cumPoints: number;
+  xp: number;
+  level: number;
+  badges: number;
+  byColor: Record<string, number>;
+  account: boolean; // has a permanent-account profile (XP/trophies counted)
+}
+
+const JUNK_NAMES = new Set(['__smoketest__', '__probe__']);
+
+/**
+ * Build the players (career) board by aggregating the whole `scores` table by
+ * NAME — so every named player who ever played appears, not just those with a
+ * post-feature account ("backfill"). cum_points & per-colour come from scores;
+ * XP/level/trophies are merged in from `profiles` (by name) when the player has
+ * an account, and add to their career score. Live, not a one-off.
+ * Returns null on read error, [] when there's genuinely nothing.
+ */
+export async function fetchCareerBoard(): Promise<CareerEntry[] | null> {
+  if (!supabase) return [];
+  try {
+    const { data: scores, error } = await supabase
+      .from('scores')
+      .select('name,pct,diff,belt')
+      .limit(5000);
+    if (error) return null;
+
+    const { data: profs } = await supabase.from('profiles').select('name,xp,level,badges');
+    const profByName = new Map((profs ?? []).map((p) => [p.name, p]));
+
+    const agg = new Map<string, { name: string; cumPoints: number; byColor: Record<string, number> }>();
+    for (const s of scores ?? []) {
+      const name = (s.name ?? '').trim();
+      if (!name || JUNK_NAMES.has(name) || name.toLowerCase() === 'ospite') continue;
+      const pts = leaderboardPoints(s.pct, s.diff);
+      const e = agg.get(name) ?? { name, cumPoints: 0, byColor: {} as Record<string, number> };
+      e.cumPoints += pts;
+      const label = beltGroupOf(s.belt).label;
+      e.byColor[label] = (e.byColor[label] ?? 0) + pts;
+      agg.set(name, e);
+    }
+
+    const entries: CareerEntry[] = [...agg.values()].map((e) => {
+      const prof = profByName.get(e.name) as { xp?: number; level?: number; badges?: number } | undefined;
+      const xp = prof?.xp ?? 0;
+      const badges = prof?.badges ?? 0;
+      const level = prof?.level ?? 1;
+      return {
+        name: e.name,
+        cumPoints: e.cumPoints,
+        byColor: e.byColor,
+        xp,
+        level,
+        badges,
+        account: !!prof,
+        career: careerScore(xp, badges, e.cumPoints),
+      };
+    });
+    entries.sort((a, b) => b.career - a.career);
+    return entries;
   } catch {
     return null;
   }
