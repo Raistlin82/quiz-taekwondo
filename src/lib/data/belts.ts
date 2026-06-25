@@ -97,5 +97,6 @@ const DIFF_WEIGHT_BY_NAME: Record<string, number> = Object.fromEntries(
 /** Leaderboard points: accuracy (0..100) scaled by the difficulty weight, so at
  *  equal belt a harder run always outranks an easier one of equal accuracy. */
 export function leaderboardPoints(pct: number, diffName: string): number {
-  return Math.round(pct * (DIFF_WEIGHT_BY_NAME[diffName] ?? 1));
+  const safePct = Number.isFinite(pct) ? pct : 0;
+  return Math.round(safePct * (DIFF_WEIGHT_BY_NAME[diffName] ?? 1));
 }

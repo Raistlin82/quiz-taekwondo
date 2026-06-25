@@ -16,6 +16,7 @@ export interface ScoreRow {
   diff: string;
   secs?: number; // total seconds taken (speed tiebreak; lower is better)
   ts?: number;
+  created_at?: string; // Supabase creation timestamp, used as online tiebreak
   points?: number; // difficulty-weighted ranking points (computed client-side)
 }
 
@@ -43,10 +44,44 @@ const sbHeaders = () => ({
 });
 
 /* ---- local storage ---- */
+function finiteNumber(v: unknown): number | null {
+  return typeof v === 'number' && Number.isFinite(v) ? v : null;
+}
+
+function normalizeScoreRow(raw: unknown): ScoreRow | null {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const r = raw as Record<string, unknown>;
+  const id = typeof r.id === 'string' && r.id ? r.id : null;
+  const name = typeof r.name === 'string' ? r.name : null;
+  const score = finiteNumber(r.score);
+  const total = finiteNumber(r.total);
+  const pct = finiteNumber(r.pct);
+  const belt = finiteNumber(r.belt);
+  const diff = typeof r.diff === 'string' ? r.diff : null;
+  if (!id || name == null || score == null || total == null || pct == null || belt == null || !diff) {
+    return null;
+  }
+  const row: ScoreRow = {
+    id,
+    name,
+    score,
+    total,
+    pct,
+    belt,
+    diff,
+  };
+  const secs = finiteNumber(r.secs);
+  if (secs != null) row.secs = secs;
+  const ts = finiteNumber(r.ts);
+  if (ts != null) row.ts = ts;
+  if (typeof r.created_at === 'string') row.created_at = r.created_at;
+  return row;
+}
+
 function loadLocal(): ScoreRow[] {
   try {
     const v = JSON.parse(localStorage.getItem(LB_KEY) || '[]');
-    return Array.isArray(v) ? v : [];
+    return Array.isArray(v) ? v.map(normalizeScoreRow).filter((r): r is ScoreRow => r != null) : [];
   } catch {
     return [];
   }
@@ -71,12 +106,28 @@ const withPoints = (rows: ScoreRow[]): ScoreRow[] =>
  *  then — at equal points — by OVERALL SPEED (less total time wins), then
  *  accuracy, then raw correct, then earliest submission. Rows without a
  *  recorded time sort after those that have one. */
+function submittedAt(r: ScoreRow): number {
+  if (typeof r.ts === 'number' && Number.isFinite(r.ts)) return r.ts;
+  if (r.created_at) {
+    const parsed = Date.parse(r.created_at);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return Infinity;
+}
+
+function compareSubmittedAt(a: ScoreRow, b: ScoreRow): number {
+  const at = submittedAt(a);
+  const bt = submittedAt(b);
+  if (at === bt) return 0;
+  return at - bt;
+}
+
 const rankRows = (a: ScoreRow, b: ScoreRow) =>
   (b.points ?? 0) - (a.points ?? 0) ||
   (a.secs ?? Infinity) - (b.secs ?? Infinity) ||
   b.pct - a.pct ||
   b.score - a.score ||
-  (a.ts ?? 0) - (b.ts ?? 0);
+  compareSubmittedAt(a, b);
 
 // Names used for connectivity/setup tests that must never appear on the board.
 const JUNK_NAMES = new Set(['__smoketest__']);
@@ -127,7 +178,7 @@ export async function submitAndFetch(
           .single();
       }
       if (res.error) throw res.error;
-      postedRow = (res.data as ScoreRow) ?? null;
+      postedRow = normalizeScoreRow(res.data);
       myId = postedRow?.id ?? null;
       posted = true;
     } catch {
@@ -148,7 +199,14 @@ export async function submitAndFetch(
           { headers: sbHeaders() },
         );
         if (!r2.ok) throw new Error('get failed');
-        const rows = withPoints(dropJunk((await r2.json()) as ScoreRow[]))
+        const rawRows = await r2.json();
+        const rows = withPoints(
+          dropJunk(
+            (Array.isArray(rawRows) ? rawRows : [])
+              .map(normalizeScoreRow)
+              .filter((row): row is ScoreRow => row != null),
+          ),
+        )
           .sort(rankRows)
           .slice(0, 100);
         return { rows, myId, online: true, groupLabel: group.label };

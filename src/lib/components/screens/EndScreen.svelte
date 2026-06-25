@@ -76,7 +76,8 @@
         myId = res.myId;
         online = res.online;
         groupLabel = res.groupLabel;
-        if (SHARED && !res.online) error = 'Classifica online non raggiungibile. Mostro quella locale.';
+        if (SHARED && named && !res.online)
+          error = 'Classifica online non raggiungibile. Mostro quella locale.';
       })
       .catch(() => (error = 'Impossibile caricare la classifica.'))
       .finally(() => (loading = false));

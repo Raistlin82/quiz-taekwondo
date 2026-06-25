@@ -26,11 +26,17 @@ interface Settings {
   music: boolean;
 }
 function initialSettings(): Settings {
+  const defaults = { sound: true, haptics: true, music: false };
   try {
     const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '');
-    return { sound: s.sound ?? true, haptics: s.haptics ?? true, music: s.music ?? false };
+    if (!s || typeof s !== 'object' || Array.isArray(s)) return defaults;
+    return {
+      sound: typeof s.sound === 'boolean' ? s.sound : defaults.sound,
+      haptics: typeof s.haptics === 'boolean' ? s.haptics : defaults.haptics,
+      music: typeof s.music === 'boolean' ? s.music : defaults.music,
+    };
   } catch {
-    return { sound: true, haptics: true, music: false };
+    return defaults;
   }
 }
 

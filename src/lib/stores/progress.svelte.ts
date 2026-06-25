@@ -62,24 +62,58 @@ function emptyProgress(): ProgressData {
   };
 }
 
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return !!v && typeof v === 'object' && !Array.isArray(v);
+}
+
+function finiteNumber(v: unknown, fallback: number): number {
+  return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
+}
+
+function nonNegativeInt(v: unknown, fallback: number): number {
+  return Math.max(0, Math.trunc(finiteNumber(v, fallback)));
+}
+
+function sanitizeSrs(v: unknown): Record<string, SrsCard> {
+  if (!isRecord(v)) return {};
+  const out: Record<string, SrsCard> = {};
+  for (const [key, raw] of Object.entries(v)) {
+    if (!key || !isRecord(raw)) continue;
+    const box = nonNegativeInt(raw.box, 0);
+    const due = finiteNumber(raw.due, NaN);
+    if (box >= 1 && box < BOX_INTERVAL.length && Number.isFinite(due)) {
+      out[key] = { box, due };
+    }
+  }
+  return out;
+}
+
+function sanitizeCatStats(v: unknown): CatTally {
+  if (!isRecord(v)) return {};
+  const out: CatTally = {};
+  for (const [cat, raw] of Object.entries(v)) {
+    if (!cat || !isRecord(raw)) continue;
+    const total = nonNegativeInt(raw.total, 0);
+    const correct = Math.min(total, nonNegativeInt(raw.correct, 0));
+    if (total > 0) out[cat] = { total, correct };
+  }
+  return out;
+}
+
 /** Coerce an arbitrary value (localStorage string or cloud JSONB) into ProgressData. */
 function sanitize(saved: unknown): ProgressData {
   const base = emptyProgress();
-  if (!saved || typeof saved !== 'object') return base;
-  const s = saved as Record<string, unknown>;
-  const num = (v: unknown, d: number) => (Number.isFinite(v) ? (v as number) : d);
+  if (!isRecord(saved)) return base;
+  const s = saved;
   return {
-    xp: num(s.xp, 0),
-    gamesPlayed: num(s.gamesPlayed, 0),
-    bestStreak: num(s.bestStreak, 0),
-    fastAnswers: num(s.fastAnswers, 0),
-    studySessions: num(s.studySessions, 0),
+    xp: nonNegativeInt(s.xp, 0),
+    gamesPlayed: nonNegativeInt(s.gamesPlayed, 0),
+    bestStreak: nonNegativeInt(s.bestStreak, 0),
+    fastAnswers: nonNegativeInt(s.fastAnswers, 0),
+    studySessions: nonNegativeInt(s.studySessions, 0),
     badges: Array.isArray(s.badges) ? (s.badges.filter((b) => typeof b === 'string') as string[]) : [],
-    srs: s.srs && typeof s.srs === 'object' && !Array.isArray(s.srs) ? (s.srs as Record<string, SrsCard>) : {},
-    catStats:
-      s.catStats && typeof s.catStats === 'object' && !Array.isArray(s.catStats)
-        ? (s.catStats as CatTally)
-        : {},
+    srs: sanitizeSrs(s.srs),
+    catStats: sanitizeCatStats(s.catStats),
   };
 }
 
@@ -145,6 +179,7 @@ class ProgressStore {
 
   /** Current Supabase user id once auth resolves; null = local-only mode. */
   private cloudUserId: string | null = null;
+  private cloudReady = false;
   private pushTimer: ReturnType<typeof setTimeout> | null = null;
 
   get xp() {
@@ -291,17 +326,23 @@ class ProgressStore {
    */
   async attachUser(userId: string | null): Promise<void> {
     if (!userId) {
+      this.clearPendingCloudPush();
       this.cloudUserId = null;
+      this.cloudReady = false;
       return;
     }
     const switching = this.cloudUserId !== userId;
+    const needsInitialPush = switching || !this.cloudReady;
+    this.clearPendingCloudPush();
     this.cloudUserId = userId;
+    this.cloudReady = false;
     let cloud: ProgressData | null = null;
     try {
       cloud = await fetchCloudProgress(userId);
     } catch {
       // Read failed (network/RLS). Don't seed local-only data over the unread
-      // cloud row — leave it untouched; a later persist() pushes once merged. (bug-hunt)
+      // cloud row. Disable cloud pushes until a later attach succeeds.
+      if (this.cloudUserId === userId) this.cloudReady = false;
       return;
     }
     // A newer attachUser (a different user) superseded this one while we awaited. (bug-hunt)
@@ -310,35 +351,43 @@ class ProgressStore {
       this.data = mergeProgress(this.data, sanitize(cloud));
       this.persistLocal();
     }
+    this.cloudReady = true;
     // Ensure the row exists / reflects the merged state. Push immediately on a
     // fresh bind so a new device's empty cloud row gets seeded right away.
-    this.queueCloudPush(switching);
+    this.queueCloudPush(needsInitialPush);
   }
 
   /** Drop in-memory progress to a guest baseline (used on sign-out) so a
    *  permanent account's data is never carried into the next anonymous cloud
    *  row. Cancels any pending push first. (bug-hunt) */
   resetForSignOut(): void {
+    this.clearPendingCloudPush();
+    this.cloudUserId = null;
+    this.cloudReady = false;
+    this.data = emptyProgress();
+    this.persistLocal();
+  }
+
+  private clearPendingCloudPush(): void {
     if (this.pushTimer) {
       clearTimeout(this.pushTimer);
       this.pushTimer = null;
     }
-    this.cloudUserId = null;
-    this.data = emptyProgress();
-    this.persistLocal();
   }
 
   /** Schedule (debounced) a push of the current progress to the cloud. */
   private queueCloudPush(immediate = false): void {
     const userId = this.cloudUserId;
-    if (!userId) return;
-    if (this.pushTimer) {
-      clearTimeout(this.pushTimer);
-      this.pushTimer = null;
-    }
+    if (!userId || !this.cloudReady) return;
+    this.clearPendingCloudPush();
     const run = () => void pushCloudProgress(userId, this.data);
-    if (immediate) run();
-    else this.pushTimer = setTimeout(run, 1500);
+    const guardedRun = () => {
+      this.pushTimer = null;
+      if (this.cloudUserId !== userId || !this.cloudReady) return;
+      run();
+    };
+    if (immediate) guardedRun();
+    else this.pushTimer = setTimeout(guardedRun, 1500);
   }
 
   private persistLocal(): void {

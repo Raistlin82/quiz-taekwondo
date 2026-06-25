@@ -147,7 +147,7 @@ class GameStore {
     return shuffle(items).map(shuffleOptions);
   }
 
-  private resetCounters(): void {
+  private resetCounters(resetGraded = true): void {
     this.idx = 0;
     this.score = 0;
     this.streak = 0;
@@ -158,7 +158,7 @@ class GameStore {
     this.timeUsed = 0;
     this.wrong = [];
     this.correctKeys = [];
-    this.gradedKeys.clear();
+    if (resetGraded) this.gradedKeys.clear();
     this.summary = null;
   }
 
@@ -196,7 +196,7 @@ class GameStore {
         return;
       }
       this.questions = this.questions.map((q) => shuffleOptions(q));
-      this.resetCounters();
+      this.resetCounters(false);
       this.screen = 'quiz';
       this.beginQuestion();
     } else {
