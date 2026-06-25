@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Distintivo Taekwon-Do: calcio volante">
+  <defs>
+    <radialGradient id="paper" cx="42%" cy="36%" r="75%">
+      <stop offset="0" stop-color="#fbf5e6"/>
+      <stop offset="0.6" stop-color="#f1e6cb"/>
+      <stop offset="1" stop-color="#e2d2ab"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e9c876"/>
+      <stop offset="0.5" stop-color="#b98e3e"/>
+      <stop offset="1" stop-color="#8a6526"/>
+    </linearGradient>
+    <linearGradient id="gi" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0" stop-color="#2a2420"/>
+      <stop offset="1" stop-color="#15110d"/>
+    </linearGradient>
+    <radialGradient id="vign" cx="50%" cy="44%" r="60%">
+      <stop offset="0.6" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#5b4423" stop-opacity="0.28"/>
+    </radialGradient>
+    <filter id="figshadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#3a2a12" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- medallion -->
+  <circle cx="256" cy="256" r="248" fill="url(#gold)"/>
+  <circle cx="256" cy="256" r="232" fill="#7a5a26"/>
+  <circle cx="256" cy="256" r="226" fill="url(#paper)"/>
+  <circle cx="256" cy="256" r="226" fill="url(#vign)"/>
+  <circle cx="256" cy="256" r="214" fill="none" stroke="#b98e3e" stroke-width="3" stroke-opacity="0.55"/>
+
+  <!-- figure: flying side kick, facing right (pictogram style) -->
+  <g filter="url(#figshadow)" fill="none" stroke="url(#gi)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round">
+    <!-- rear (chambered) leg -->
+    <path d="M226 250 L208 322 L262 350"/>
+    <!-- kicking leg, extended high to the right -->
+    <path d="M226 250 L312 232 L404 214"/>
+    <!-- torso -->
+    <path d="M186 182 L226 250"/>
+    <!-- rear arm: guard up by the head -->
+    <path d="M190 196 L150 206 L138 168"/>
+    <!-- front arm: reaching forward for balance -->
+    <path d="M194 190 L240 198 L274 184"/>
+  </g>
+  <!-- foot blade (footsword) on the kicking leg -->
+  <path d="M404 214 L436 232" fill="none" stroke="url(#gi)" stroke-width="30" stroke-linecap="round" filter="url(#figshadow)"/>
+  <!-- head -->
+  <circle cx="178" cy="150" r="31" fill="url(#gi)" filter="url(#figshadow)"/>
+
+  <!-- red belt + flying tails -->
+  <g fill="none" stroke="#c0392b" stroke-linecap="round">
+    <path d="M205 232 L247 268" stroke-width="20"/>
+    <path d="M214 256 Q190 278 176 312" stroke-width="9"/>
+    <path d="M224 264 Q202 288 192 326" stroke-width="9"/>
+  </g>
+</svg>
