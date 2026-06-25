@@ -15,10 +15,8 @@ function initialTheme(): ThemeName {
   } catch {
     /* ignore */
   }
-  const prefersDark =
-    typeof window !== 'undefined' &&
-    window.matchMedia?.('(prefers-color-scheme: dark)').matches;
-  return prefersDark ? 'dark' : 'light';
+  // No saved preference → dark is the default.
+  return 'dark';
 }
 
 interface Settings {
