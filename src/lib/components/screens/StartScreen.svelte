@@ -3,16 +3,13 @@
   import { gameStore } from '../../stores/game.svelte';
   import { progressStore } from '../../stores/progress.svelte';
   import { authStore } from '../../stores/auth.svelte';
+  import { themeStore } from '../../stores/theme.svelte';
   import BeltPicker from '../BeltPicker.svelte';
   import DifficultyPicker from '../DifficultyPicker.svelte';
   import AuthBar from '../AuthBar.svelte';
 
   const lvl = $derived(progressStore.level);
 
-  // Prefill the player name from the signed-in account (auth resolves async,
-  // after mount). `untrack` keeps the effect dependent ONLY on displayName, so
-  // it runs when the account name arrives — not on every keystroke — and never
-  // re-fills the field after the user clears it.
   $effect(() => {
     const name = authStore.displayName;
     if (name && !untrack(() => gameStore.playerName.trim())) {
@@ -20,9 +17,8 @@
     }
   });
 
-  // `tick` lets the due count re-evaluate on wall-clock events (a card can
-  // become due while the start screen sits idle past midnight). (B5)
   let tick = $state(0);
+  let settingsOpen = $state(false);
   const due = $derived.by(() => {
     void tick;
     return progressStore.dueCount();
@@ -45,42 +41,58 @@
 
 <section class="screen">
   <header class="brand">
-    <span class="logo" aria-hidden="true">🥋</span>
-    <span class="brand-name">Taekwon-Do ITF</span>
+    <div>
+      <div class="brand-name">
+        <img class="logo-wordmark" src="/ui/logo-taekwondo-itf.png" alt="Taekwon-Do ITF" />
+        <span class="seal" aria-hidden="true">武</span>
+      </div>
+      <h1>Esame Cinture</h1>
+    </div>
   </header>
 
-  <h1 class="hero-title">Esame Cinture</h1>
-  <p class="hero-sub">Quiz d'allenamento · storia, coreano, principi e forme</p>
+  <div class="ink-wash" aria-hidden="true"></div>
 
-  <AuthBar />
-
-  <div class="player-strip">
-    <div class="lvl">
-      <span class="lvl-badge">Lv {lvl.level}</span>
+  <div class="player-card" aria-label="Progressi giocatore">
+    <div class="avatar"><img src="/ui/dobok-avatar.png" alt="" /></div>
+    <div class="player-main">
+      <div class="player-line">
+        <b>Lv {lvl.level}</b>
+        <span>{progressStore.xp} XP</span>
+      </div>
       <div class="xp-track"><div class="xp-fill" style="width:{lvl.pct}%"></div></div>
-      <span class="xp-num">{progressStore.xp} XP</span>
     </div>
-    <div class="stat" title="Miglior serie">🔥 {progressStore.bestStreak}</div>
   </div>
 
-  <input
-    class="name-box"
-    maxlength="18"
-    placeholder="Come ti chiami?"
-    bind:value={gameStore.playerName}
-    onkeydown={(e) => e.key === 'Enter' && start()}
-  />
+  <label class="field">
+    <span>Nome</span>
+    <div class="name-wrap">
+      <input
+        class="name-box"
+        maxlength="18"
+        placeholder="Come ti chiami?"
+        bind:value={gameStore.playerName}
+        onkeydown={(e) => e.key === 'Enter' && start()}
+      />
+      <span aria-hidden="true">✎</span>
+    </div>
+  </label>
 
-  <div class="label">🎯 Per quale cintura fai l'esame?</div>
-  <BeltPicker bind:value={gameStore.selBelt} />
+  <div class="field">
+    <span>Cintura</span>
+    <BeltPicker bind:value={gameStore.selBelt} />
+  </div>
 
-  <div class="label">🔥 Livello di difficoltà</div>
-  <DifficultyPicker bind:value={gameStore.selDiff} />
+  <div class="field">
+    <span>Difficoltà</span>
+    <DifficultyPicker bind:value={gameStore.selDiff} />
+  </div>
 
-  <button class="cta" onclick={start}>▶ Inizia il quiz</button>
+  <button class="cta seal-btn" onclick={start}><span aria-hidden="true">篆</span> Inizia il quiz</button>
 
   <div class="secondary">
-    <button class="ghost" onclick={() => gameStore.goStudy()}>📖 Studia</button>
+    <button class="ghost" onclick={() => gameStore.goStudy()}>
+      <img src="/ui/icons/book.png" alt="" />Studia
+    </button>
     <button
       class="ghost ripasso"
       class:active={due > 0}
@@ -93,168 +105,334 @@
         : 'Ripasso non disponibile: nessuna domanda da rivedere'}
       onclick={() => gameStore.startReview()}
     >
-      🔁 Ripasso {due > 0 ? `(${due})` : ''}
+      <img src="/ui/icons/review.png" alt="" />Ripassa errori{due > 0 ? ` (${due})` : ''}
     </button>
   </div>
 
-  <button class="ghost ranking-btn" onclick={() => gameStore.goRanking()}>
-    🏆 Classifica giocatori
-  </button>
+  <div class="home-auth">
+    <AuthBar />
+  </div>
 
-  {#if due > 0}
-    <p class="hint">🔁 Hai {due} domand{due === 1 ? 'a' : 'e'} da ripassare.</p>
-  {:else}
-    <p class="hint">⏱️ Hai 10 secondi per ogni risposta. Pronto?</p>
+  {#if settingsOpen}
+    <div class="settings-panel">
+      <div class="settings-title">Impostazioni</div>
+      <div class="setting-row">
+        <button class="ghost" onclick={() => themeStore.toggleTheme()}>
+          {themeStore.theme === 'dark' ? 'Tema chiaro' : 'Tema scuro'}
+        </button>
+        <button class="ghost" onclick={() => themeStore.toggleSound()}>
+          {themeStore.sound ? 'Suoni on' : 'Suoni off'}
+        </button>
+        <button class="ghost" onclick={() => themeStore.toggleMusic()}>
+          {themeStore.music ? 'Musica on' : 'Musica off'}
+        </button>
+      </div>
+    </div>
   {/if}
+
+  <nav class="bottom-nav" aria-label="Navigazione principale">
+    <button class="active" aria-current="page"><img src="/ui/icons/home.png" alt="" /><span>Home</span></button>
+    <button onclick={() => gameStore.goRanking()}><img src="/ui/icons/chart.png" alt="" /><span>Statistiche</span></button>
+    <button onclick={() => (settingsOpen = !settingsOpen)}><img src="/ui/icons/settings.png" alt="" /><span>Impostazioni</span></button>
+  </nav>
 </section>
 
 <style>
-  .brand {
+  .screen {
+    min-height: calc(min(900px, 100dvh - 28px) - 40px);
     display: flex;
-    align-items: center;
-    gap: 10px;
+    flex-direction: column;
   }
-  .logo {
-    width: 38px;
-    height: 38px;
-    border-radius: 9px;
-    background: var(--text);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.15rem;
-    flex: 0 0 auto;
+  .brand {
+    padding-top: 0;
+    text-align: center;
   }
   .brand-name {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 1.05rem;
-    letter-spacing: -0.3px;
-    color: var(--text);
-  }
-  .hero-title {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 1.9rem;
-    line-height: 1.08;
-    letter-spacing: -0.8px;
-    text-align: left;
-    color: var(--text);
-    margin-top: 18px;
-  }
-  .hero-sub {
-    text-align: left;
-    color: var(--text-muted);
-    margin-top: 6px;
-    font-weight: 500;
-    font-size: 0.95rem;
-  }
-
-  .player-strip {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
-    margin-top: 16px;
+    justify-content: center;
+    gap: 7px;
+    line-height: 1;
+    width: 100%;
   }
-  .lvl {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  .logo-wordmark {
+    width: min(292px, 74vw);
+    height: auto;
+    display: block;
+    filter: brightness(0) contrast(1.35);
   }
-  .lvl-badge {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 0.8rem;
-    color: #fff;
-    background: linear-gradient(135deg, var(--verde), var(--blu));
-    padding: 4px 9px;
+  :global([data-theme='dark']) .logo-wordmark {
+    filter: invert(1) sepia(0.18) saturate(0.9) brightness(1.18) contrast(1.12);
+    opacity: 0.96;
+  }
+  .seal {
+    display: inline-grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--primary);
+    border-radius: 3px;
+    color: var(--primary);
+    font-family: 'Ma Shan Zheng', var(--font-display);
+    font-size: 0.9rem;
+    transform: rotate(3deg);
+  }
+  h1 {
+    position: relative;
+    margin-top: 4px;
+    font-size: 1.78rem;
+    font-weight: 700;
+  }
+  h1::after {
+    content: '';
+    display: block;
+    width: 166px;
+    height: 3px;
+    margin: 6px auto 0;
+    background: var(--primary);
     border-radius: 999px;
-    flex: 0 0 auto;
+    opacity: 0.86;
+  }
+  .ink-wash {
+    height: 38px;
+    margin: -7px -18px -6px;
+    background: url('/ui/ink-mountains.png') center bottom / 100% auto no-repeat;
+    opacity: 0.55;
+  }
+  :global([data-theme='dark']) .ink-wash {
+    opacity: 0.34;
+    filter: invert(1) sepia(0.16) hue-rotate(350deg) brightness(0.9) contrast(0.8);
+  }
+  .player-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 67px;
+    margin-top: 0;
+    padding: 11px 14px 10px 96px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background:
+      linear-gradient(90deg, color-mix(in srgb, var(--surface) 94%, transparent), color-mix(in srgb, var(--surface) 82%, transparent)),
+      color-mix(in srgb, var(--surface) 92%, var(--surface-2));
+    box-shadow: 0 11px 22px -18px rgba(42, 28, 15, 0.55);
+  }
+  .avatar {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 16px -12px rgba(42, 28, 15, 0.6);
+    overflow: hidden;
+  }
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .player-main {
+    flex: 1;
+    min-width: 0;
+  }
+  .player-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-family: var(--font-display);
+    font-variant-numeric: lining-nums tabular-nums;
+    color: var(--ink);
+  }
+  .player-line b {
+    color: var(--primary);
+    font-weight: 900;
+    font-size: 1.05rem;
+  }
+  .player-line span {
+    font-weight: 800;
+    font-size: 0.98rem;
   }
   .xp-track {
-    flex: 1;
-    height: 8px;
+    height: 6px;
+    margin-top: 8px;
     border-radius: 999px;
-    background: var(--track);
+    background: color-mix(in srgb, var(--track) 80%, var(--surface));
     overflow: hidden;
-    border: 1px solid var(--border);
   }
   .xp-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--verde), var(--blu));
-    transition: width 0.5s var(--ease-out);
+    background: var(--primary);
+    border-radius: inherit;
   }
-  .xp-num {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 0.72rem;
-    color: var(--ink-soft);
-    flex: 0 0 auto;
+  .field {
+    display: block;
+    margin-top: 9px;
   }
-  .stat {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 0.85rem;
+  .field > span {
+    display: block;
+    margin: 0 0 6px 2px;
     color: var(--ink);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 4px 10px;
+    font-size: 0.86rem;
+    font-weight: 700;
   }
-
+  .name-wrap {
+    position: relative;
+  }
+  .name-wrap > span {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink-soft);
+  }
   .name-box {
     width: 100%;
-    margin-top: 14px;
-    padding: 13px 16px;
-    border: 2px solid var(--border);
-    border-radius: 16px;
-    /* >=16px prevents iOS Safari from zooming on focus (U29) */
-    font-size: max(16px, 1.02rem);
-    font-family: inherit;
-    font-weight: 700;
-    text-align: center;
-    background: var(--surface);
+    min-height: 44px;
+    padding: 9px 42px 9px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: max(16px, 1rem);
+    font-family: var(--font-body);
+    font-weight: 650;
+    background: color-mix(in srgb, var(--surface) 92%, var(--surface-2));
     color: var(--ink);
-    transition: 0.2s;
   }
   .name-box::placeholder {
     color: var(--ink-faint);
-    font-weight: 600;
   }
   .name-box:focus {
     outline: none;
-    border-color: var(--blu);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 16%, transparent);
   }
-
-  .cta {
-    margin-top: 20px;
+  .seal-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    min-height: 56px;
+    margin-top: 15px;
+    font-size: 1.28rem;
+    border: 0;
+    border-radius: 9px;
+    background:
+      linear-gradient(rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.08)),
+      url('/ui/red-brush-button.png') center / 100% 100% no-repeat,
+      var(--primary);
+    box-shadow: 0 13px 24px -18px rgba(97, 28, 22, 0.9);
+  }
+  .seal-btn span {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border: 2px solid rgba(255, 255, 255, 0.82);
+    border-radius: 3px;
+    font-family: 'Ma Shan Zheng', var(--font-display);
+    font-size: 1rem;
   }
   .secondary {
-    display: flex;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
     margin-top: 10px;
   }
   .secondary button {
-    flex: 1;
-    padding: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     min-height: 44px;
-    font-size: 0.95rem;
+    font-size: 1rem;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--surface) 88%, var(--surface-2));
+  }
+  .secondary img {
+    width: 25px;
+    height: 25px;
+    object-fit: contain;
+    opacity: 0.88;
+  }
+  :global([data-theme='dark']) .secondary img,
+  :global([data-theme='dark']) .bottom-nav img {
+    filter: invert(1) sepia(0.16) saturate(0.8) brightness(1.15) contrast(1.05);
   }
   .ripasso.active {
-    background: var(--amber-bg);
-    color: var(--amber-ink);
+    color: var(--primary);
+    border-color: var(--primary);
   }
   .secondary button:disabled {
     opacity: 0.5;
     cursor: default;
   }
-  .ranking-btn {
-    width: 100%;
+  .settings-panel {
+    margin-top: 9px;
+    padding: 10px;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+  }
+  .home-auth {
     margin-top: 10px;
-    padding: 12px;
-    min-height: 44px;
-    font-size: 0.95rem;
+  }
+  .settings-title {
+    margin-bottom: 8px;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 0.94rem;
+    font-weight: 900;
+  }
+  .setting-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .setting-row button {
+    min-height: 38px;
+    padding: 6px;
+    font-size: 0.72rem;
+  }
+  .bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    margin-top: auto;
+    padding-top: 8px;
+  }
+  .bottom-nav button {
+    display: grid;
+    gap: 3px;
+    place-items: center;
+    min-height: 42px;
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: 1.25rem;
+    border-radius: 10px;
+  }
+  .bottom-nav img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    opacity: 0.82;
+  }
+  .bottom-nav button.active img {
+    filter: sepia(1) saturate(3) hue-rotate(320deg);
+  }
+  :global([data-theme='dark']) .bottom-nav button.active img {
+    filter: invert(48%) sepia(62%) saturate(1172%) hue-rotate(322deg) brightness(102%) contrast(91%);
+  }
+  .bottom-nav button span {
+    font-family: var(--font-body);
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+  .bottom-nav button.active {
+    color: var(--primary);
   }
 </style>

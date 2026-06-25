@@ -96,7 +96,6 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 8px;
-    padding-right: var(--controls-gutter); /* clear the absolute top-right controls (U23) */
     min-height: 44px;
   }
   .restart-btn {

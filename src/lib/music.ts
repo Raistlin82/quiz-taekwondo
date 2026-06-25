@@ -1,10 +1,8 @@
 /* ============================================================
-   Background music — warm ambient loop, fully procedural (Web
-   Audio, no files). A slow, consonant chord progression
-   (Am – F – C – G) is gently arpeggiated with soft detuned sine
-   "pads", warmed by a low-pass filter and an echo/space delay.
-   No randomness in pitch → it sounds intentional, not aimless.
-   Shares the SFX AudioContext. Guarded; loops until stopped.
+   Background music — warm ambient dojo loop, fully procedural
+   (Web Audio, no files). Kept deliberately low in the mix so it
+   feels like room tone, not game music. Shares the SFX AudioContext.
+   Guarded; loops until stopped.
    ============================================================ */
 
 import { getAudioContext } from './audio';
@@ -89,11 +87,11 @@ export function startMusic(): void {
   // Master bus → low-pass (warmth) → destination.
   master = ctx.createGain();
   master.gain.setValueAtTime(0.0001, now);
-  master.gain.exponentialRampToValueAtTime(0.5, now + 3); // slow fade-in
+  master.gain.exponentialRampToValueAtTime(0.18, now + 3); // slow, quiet fade-in
   lp = ctx.createBiquadFilter();
   lp.type = 'lowpass';
-  lp.frequency.value = 1900;
-  lp.Q.value = 0.3;
+  lp.frequency.value = 1350;
+  lp.Q.value = 0.18;
   master.connect(lp);
   lp.connect(ctx.destination);
 
@@ -102,7 +100,7 @@ export function startMusic(): void {
   delay = ctx.createDelay(1.0);
   delay.delayTime.value = 0.34;
   feedback = ctx.createGain();
-  feedback.gain.value = 0.3;
+  feedback.gain.value = 0.18;
   delay.connect(feedback);
   feedback.connect(delay);
   delay.connect(master);

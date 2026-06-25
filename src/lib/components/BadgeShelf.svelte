@@ -26,9 +26,9 @@
     gap: 8px;
   }
   .badge {
-    background: var(--surface);
+    background: color-mix(in srgb, var(--surface) 88%, var(--surface-2));
     border: 1px solid var(--border);
-    border-radius: 14px;
+    border-radius: var(--radius-xs);
     padding: 10px 6px;
     text-align: center;
     opacity: 0.55;
@@ -41,7 +41,7 @@
   }
   .badge.new {
     border-color: var(--giallo);
-    box-shadow: 0 6px 18px -6px rgba(251, 191, 36, 0.7);
+    box-shadow: 0 6px 18px -8px var(--amber-glow);
     animation: pop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.4);
   }
   .em {
@@ -50,7 +50,7 @@
   }
   .nm {
     font-family: var(--font-display);
-    font-weight: 700;
+    font-weight: 800;
     font-size: 0.68rem;
     color: var(--ink-soft);
     margin-top: 2px;

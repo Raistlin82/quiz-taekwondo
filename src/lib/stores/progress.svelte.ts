@@ -326,14 +326,17 @@ class ProgressStore {
    */
   async attachUser(userId: string | null): Promise<void> {
     if (!userId) {
-      this.clearPendingCloudPush();
+      this.flushPendingCloudPush();
       this.cloudUserId = null;
       this.cloudReady = false;
       return;
     }
     const switching = this.cloudUserId !== userId;
     const needsInitialPush = switching || !this.cloudReady;
-    this.clearPendingCloudPush();
+    // Flush (don't silently cancel) a pending push for the OUTGOING user first,
+    // so the last scheduled progress reaches the OLD cloud row before we rebind
+    // and mergeProgress() rewrites this.data. (bug-hunt)
+    this.flushPendingCloudPush();
     this.cloudUserId = userId;
     this.cloudReady = false;
     let cloud: ProgressData | null = null;
@@ -361,7 +364,8 @@ class ProgressStore {
    *  permanent account's data is never carried into the next anonymous cloud
    *  row. Cancels any pending push first. (bug-hunt) */
   resetForSignOut(): void {
-    this.clearPendingCloudPush();
+    // Flush the outgoing user's pending progress before wiping this.data.
+    this.flushPendingCloudPush();
     this.cloudUserId = null;
     this.cloudReady = false;
     this.data = emptyProgress();
@@ -373,6 +377,15 @@ class ProgressStore {
       clearTimeout(this.pushTimer);
       this.pushTimer = null;
     }
+  }
+
+  /** If a debounced push is pending, send it NOW for the currently-bound user
+   *  (before any rebind changes cloudUserId/data), then clear the timer. */
+  private flushPendingCloudPush(): void {
+    if (this.pushTimer && this.cloudUserId && this.cloudReady) {
+      void pushCloudProgress(this.cloudUserId, this.data);
+    }
+    this.clearPendingCloudPush();
   }
 
   /** Schedule (debounced) a push of the current progress to the cloud. */

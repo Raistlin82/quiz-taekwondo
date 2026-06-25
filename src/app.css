@@ -1,6 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,500..900,45&family=Ma+Shan+Zheng&family=Newsreader:opsz,wght@6..72,500..900&display=swap');
+
 /* ============================================================
    Design tokens + base styles for Quiz Taekwon-Do
-   Identity: "DOJANG" — athletic / sports-dashboard.
+   Identity: "Hanji" — rice paper, sumi ink, cinnabar seal.
    Light + dark themes via [data-theme]. Components use the
    semantic vars below (never hardcoded colours) so both themes
    work without duplicating markup. Legacy token names are kept
@@ -9,19 +11,16 @@
 
 :root {
   /* Fonts */
-  --font-display: 'Space Grotesk', system-ui, -apple-system, sans-serif;
-  --font-body: 'DM Sans', system-ui, -apple-system, sans-serif;
+  --font-logo: 'Marker Felt', 'SignPainter', 'Ma Shan Zheng', cursive;
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'Newsreader', Georgia, 'Times New Roman', serif;
 
   /* Radii */
-  --radius: 14px; /* cards */
-  --radius-md: 16px; /* buttons */
+  --radius: 18px; /* cards */
+  --radius-md: 12px; /* buttons */
   --radius-sm: 12px;
-  --radius-xs: 10px;
+  --radius-xs: 8px;
   --radius-pill: 999px;
-
-  /* Clearance reserved at the right of screen headers for the floating control
-     cluster (theme + sound + music = 3×44 + 2×8 gaps + right offset). */
-  --controls-gutter: 156px;
 
   /* Motion */
   --ease-spring: cubic-bezier(0.2, 0.9, 0.3, 1.2);
@@ -33,35 +32,35 @@
 /* ---- Light theme (default) ---- */
 :root,
 [data-theme='light'] {
-  --bg: #f7f8fa;
-  --surface: #ffffff;
-  --border: #e2e8f0;
-  --text: #0f172a;
-  --text-muted: #64748b;
-  --primary: #2563eb;
-  --primary-soft: #eff4ff;
-  --primary-d: #1d4ed8;
-  --success: #16a34a;
-  --success-soft: #ecfdf3;
-  --success-d: #15803d;
-  --danger: #dc2626;
-  --danger-d: #b91c1c;
-  --accent-warm: #f59e0b;
-  --warm-soft: #fef3c7;
+  --bg: #e8ddc7;
+  --surface: #fbf4e7;
+  --border: #d7c5a2;
+  --text: #231b17;
+  --text-muted: #6f5c4e;
+  --primary: #b23a2e;
+  --primary-soft: #f6e5dc;
+  --primary-d: #8f2b22;
+  --success: #5d8a72;
+  --success-soft: #e6f0e7;
+  --success-d: #2f6d50;
+  --danger: #7d342d;
+  --danger-d: #7d342d;
+  --accent-warm: #be7d2d;
+  --warm-soft: #f4dfb7;
 
-  --shadow-card: 0 12px 40px -16px rgba(15, 23, 42, 0.18);
-  --shadow-primary: 0 12px 24px -10px var(--primary);
+  --shadow-card: 0 24px 70px -34px rgba(50, 33, 22, 0.45);
+  --shadow-primary: 0 14px 28px -16px rgba(127, 35, 28, 0.65);
 
   /* ---- Legacy aliases → new palette (keep components working) ---- */
   --ink: var(--text);
   --ink-soft: var(--text-muted);
-  --ink-faint: #94a3b8;
+  --ink-faint: #8d7b68;
   --card: var(--surface);
   --card-solid: var(--surface);
-  --surface-2: var(--bg);
-  --border-strong: #cbd5e1;
+  --surface-2: #f5ead9;
+  --border-strong: #b99766;
   --glass-brd: var(--border);
-  --track: #e2e8f0;
+  --track: #eadbc2;
   --bg-grad: var(--bg);
   --verde: var(--success);
   --verde-d: var(--success-d);
@@ -71,53 +70,54 @@
   --rosso: var(--danger);
   --rosso-d: var(--danger-d);
   --giallo: var(--accent-warm);
-  --teal: #0ea5e9;
-  --viola: #6366f1;
+  --teal: #4f8d82;
+  --viola: #78514a;
   --accent: var(--primary);
   --amber-bg: var(--warm-soft);
-  --amber-bg-soft: var(--warm-soft);
-  --amber-ink: #92400e;
-  --amber-glow: rgba(245, 158, 11, 0.4);
-  --chip-bg: var(--primary-soft);
-  --chip-ink: var(--primary);
-  --belt-brd: rgba(15, 23, 42, 0.18);
-  --medal-face: #ffffff;
-  --medal-face-2: #eff4ff;
-  --score-glow: 0 4px 10px -4px rgba(37, 99, 235, 0.4);
+  --amber-bg-soft: #f8ebcb;
+  --amber-ink: #7d4d18;
+  --amber-glow: rgba(190, 125, 45, 0.32);
+  --chip-bg: #f0dfc5;
+  --chip-ink: #794a2b;
+  --belt-brd: rgba(46, 35, 25, 0.22);
+  --medal-face: #fffaf0;
+  --medal-face-2: #f1dfc5;
+  --score-glow: 0 8px 18px -12px rgba(127, 35, 28, 0.55);
+  --paper-edge: #c7ab7a;
   color-scheme: light;
 }
 
 /* ---- Dark theme ---- */
 [data-theme='dark'] {
-  --bg: #0b0f14;
-  --surface: #151b23;
-  --border: #243040;
-  --text: #e8edf4;
-  --text-muted: #94a3b8;
-  --primary: #3b82f6;
-  --primary-soft: rgba(59, 130, 246, 0.14);
-  --primary-d: #60a5fa;
-  --success: #22c55e;
-  --success-soft: rgba(34, 197, 94, 0.12);
-  --success-d: #4ade80;
-  --danger: #f87171;
-  --danger-d: #fca5a5;
-  --accent-warm: #fbbf24;
-  --warm-soft: rgba(251, 191, 36, 0.14);
+  --bg: #120f0d;
+  --surface: #211a16;
+  --border: #66503e;
+  --text: #f7ead6;
+  --text-muted: #d2bda2;
+  --primary: #d9634f;
+  --primary-soft: rgba(217, 99, 79, 0.2);
+  --primary-d: #ff947f;
+  --success: #7fb195;
+  --success-soft: rgba(127, 177, 149, 0.18);
+  --success-d: #b2dec7;
+  --danger: #ee8977;
+  --danger-d: #ffc0b4;
+  --accent-warm: #e4ac5c;
+  --warm-soft: rgba(228, 172, 92, 0.18);
 
-  --shadow-card: 0 30px 60px -22px rgba(0, 0, 0, 0.7);
-  --shadow-primary: 0 12px 26px -10px rgba(59, 130, 246, 0.55);
+  --shadow-card: 0 32px 70px -26px rgba(0, 0, 0, 0.82);
+  --shadow-primary: 0 16px 30px -16px rgba(212, 90, 72, 0.65);
 
   /* ---- Legacy aliases → new palette ---- */
   --ink: var(--text);
   --ink-soft: var(--text-muted);
-  --ink-faint: #64748b;
+  --ink-faint: #9a826b;
   --card: var(--surface);
-  --card-solid: #1b222c;
-  --surface-2: #1b222c;
-  --border-strong: #33415a;
+  --card-solid: #2b231f;
+  --surface-2: #2d241e;
+  --border-strong: #8a684e;
   --glass-brd: var(--border);
-  --track: #1f2937;
+  --track: #3b2f27;
   --bg-grad: var(--bg);
   --verde: var(--success);
   --verde-d: var(--success-d);
@@ -127,19 +127,20 @@
   --rosso: var(--danger);
   --rosso-d: var(--danger-d);
   --giallo: var(--accent-warm);
-  --teal: #38bdf8;
-  --viola: #818cf8;
+  --teal: #8fc6b5;
+  --viola: #c78c7f;
   --accent: var(--primary);
   --amber-bg: var(--warm-soft);
   --amber-bg-soft: var(--warm-soft);
-  --amber-ink: #fbbf24;
-  --amber-glow: rgba(251, 191, 36, 0.3);
-  --chip-bg: var(--primary-soft);
+  --amber-ink: #f0bd70;
+  --amber-glow: rgba(224, 165, 82, 0.35);
+  --chip-bg: rgba(217, 99, 79, 0.18);
   --chip-ink: var(--primary-d);
-  --belt-brd: rgba(232, 237, 244, 0.3);
-  --medal-face: #1b222c;
-  --medal-face-2: #11161d;
-  --score-glow: 0 4px 14px -4px rgba(59, 130, 246, 0.35);
+  --belt-brd: rgba(245, 234, 216, 0.34);
+  --medal-face: #2b231f;
+  --medal-face-2: #1d1714;
+  --score-glow: 0 8px 22px -12px rgba(212, 90, 72, 0.55);
+  --paper-edge: #7b5d45;
   color-scheme: dark;
 }
 
@@ -163,59 +164,107 @@ body {
      than the viewport pins its top above the scroll origin (U22) */
   display: grid;
   place-items: center;
-  padding: 18px;
-  padding-top: max(18px, env(safe-area-inset-top));
-  padding-bottom: max(18px, env(safe-area-inset-bottom));
-  padding-left: max(18px, env(safe-area-inset-left));
-  padding-right: max(18px, env(safe-area-inset-right));
+  padding: 14px;
+  padding-top: max(14px, env(safe-area-inset-top));
+  padding-bottom: max(14px, env(safe-area-inset-bottom));
+  padding-left: max(14px, env(safe-area-inset-left));
+  padding-right: max(14px, env(safe-area-inset-right));
   position: relative;
   overflow-x: hidden;
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
+  font-variant-numeric: lining-nums;
   transition: background 0.3s ease;
 }
 
 #app {
   width: 100%;
-  max-width: 560px;
+  max-width: 430px;
 }
 
-/* ---- Flat background (no full-page gradient in the DOJANG look) ---- */
 .bg {
   position: fixed;
   inset: 0;
   z-index: -2;
-  background: var(--bg);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--surface) 45%, transparent), transparent 52%),
+    var(--bg);
+  background-size:
+    24px 24px,
+    24px 24px,
+    auto,
+    auto;
   transition: background 0.3s ease;
 }
 /* ---- App card ---- */
 .app {
   width: 100%;
-  max-width: 560px;
-  background: var(--surface);
+  max-width: 430px;
+  min-height: min(900px, calc(100dvh - 28px));
+  background:
+    linear-gradient(color-mix(in srgb, var(--surface) 84%, transparent), color-mix(in srgb, var(--surface) 84%, transparent)),
+    url('/ui/hanji-paper.png') center / cover,
+    var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 30px;
   box-shadow: var(--shadow-card);
-  padding: 24px 22px 26px;
+  padding: 22px 18px 18px;
   position: relative;
+  overflow: hidden;
+}
+.app::before,
+.app::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+.app::before {
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(95, 67, 42, 0.035), transparent 18%, transparent 82%, rgba(95, 67, 42, 0.035)),
+    linear-gradient(rgba(255, 255, 255, 0.09), transparent 26%),
+    radial-gradient(ellipse at 52% 18%, rgba(255, 255, 255, 0.32), transparent 42%);
+  mix-blend-mode: multiply;
+}
+[data-theme='dark'] .app {
+  background:
+    linear-gradient(rgba(33, 26, 22, 0.88), rgba(33, 26, 22, 0.9)),
+    url('/ui/hanji-paper.png') center / cover,
+    var(--surface);
+}
+[data-theme='dark'] .app::before {
+  background:
+    linear-gradient(90deg, rgba(255, 217, 176, 0.03), transparent 18%, transparent 82%, rgba(255, 217, 176, 0.03)),
+    radial-gradient(ellipse at 52% 18%, rgba(255, 235, 205, 0.09), transparent 42%);
+  mix-blend-mode: screen;
+}
+[data-theme='dark'] .app::after {
+  opacity: 0.18;
+}
+.app::after {
+  right: 18px;
+  top: 78px;
+  width: 54px;
+  height: 54px;
+  border: 2px solid color-mix(in srgb, var(--primary) 42%, transparent);
+  border-radius: 6px;
+  opacity: 0.12;
+  transform: rotate(-8deg);
 }
 .app-footer {
-  margin-top: 22px;
-  text-align: center;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.2px;
-  color: var(--text-muted);
+  display: none;
 }
 
 /* ---- Typography ---- */
 h1 {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 800;
   font-size: 1.5rem;
   line-height: 1.1;
   text-align: center;
-  letter-spacing: -0.5px;
+  letter-spacing: 0;
   color: var(--text);
 }
 .grad {
@@ -233,8 +282,8 @@ h1 {
 button {
   cursor: pointer;
   border: none;
-  font-family: var(--font-display), sans-serif;
-  font-weight: 600;
+  font-family: var(--font-display), serif;
+  font-weight: 750;
   border-radius: var(--radius-md);
   transition:
     transform 0.1s,
@@ -248,20 +297,22 @@ button:active {
 }
 .cta {
   width: 100%;
-  padding: 16px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  letter-spacing: -0.2px;
+  min-height: 60px;
+  padding: 15px 18px;
+  font-size: 1.08rem;
+  font-weight: 850;
+  letter-spacing: 0;
   color: #fff;
   background: var(--primary);
   box-shadow: var(--shadow-primary);
+  border-radius: 10px;
 }
 .cta.blu {
-  background: var(--success);
-  box-shadow: 0 12px 24px -10px var(--success);
+  background: var(--primary);
+  box-shadow: var(--shadow-primary);
 }
 .ghost {
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 82%, var(--surface-2));
   color: var(--text);
   border: 1px solid var(--border);
   box-shadow: none;
@@ -272,16 +323,16 @@ button:active {
     filter: brightness(1.06);
   }
   .ghost:hover {
-    background: var(--bg);
+    background: var(--surface-2);
     border-color: var(--border-strong);
   }
 }
 
 .label {
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 800;
   color: var(--text);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   margin: 16px 0 8px;
   display: flex;
   align-items: center;
@@ -292,7 +343,7 @@ button:active {
   color: var(--text-muted);
   text-align: center;
   margin-top: 12px;
-  font-weight: 500;
+  font-weight: 600;
 }
 .hidden {
   display: none !important;
@@ -300,19 +351,14 @@ button:active {
 
 /* ---- Floating controls (top-right cluster) ---- */
 .controls {
-  position: absolute;
-  top: max(14px, env(safe-area-inset-top));
-  right: max(14px, env(safe-area-inset-right));
-  display: flex;
-  gap: 8px;
-  z-index: 6;
+  display: none;
 }
 .icon-btn {
   width: 44px;
   height: 44px;
   border-radius: var(--radius-sm);
-  background: var(--surface);
-  box-shadow: 0 4px 12px -6px rgba(15, 23, 42, 0.2);
+  background: color-mix(in srgb, var(--surface) 82%, var(--surface-2));
+  box-shadow: 0 6px 16px -12px rgba(63, 39, 21, 0.45);
   font-size: 1.15rem;
   display: flex;
   align-items: center;
@@ -322,6 +368,14 @@ button:active {
 /* dim a toggle that is currently off (e.g. background music) */
 .icon-btn.off {
   opacity: 0.45;
+}
+.icon-btn img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+[data-theme='dark'] .icon-btn img {
+  filter: invert(1) sepia(0.16) saturate(0.8) brightness(1.18) contrast(1.05);
 }
 
 /* ---- Accessibility primitives ---- */

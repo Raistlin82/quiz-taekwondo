@@ -24,7 +24,7 @@
   <div class="auth">
     {#if authStore.isLoggedIn}
       <div class="who">
-        <span class="dot" aria-hidden="true">👤</span>
+        <img class="auth-icon" src="/ui/icons/person.png" alt="" aria-hidden="true" />
         <span class="who-txt" title={authStore.email ?? ''}>
           {authStore.displayName}<span class="email"> · {authStore.email}</span>
         </span>
@@ -32,12 +32,13 @@
       </div>
     {:else}
       <button class="save-toggle" onclick={toggle} aria-expanded={expanded}>
-        💾 Salva i progressi {expanded ? '▴' : '▾'}
+        <img class="auth-icon" src="/ui/icons/person.png" alt="" aria-hidden="true" />
+        Salva i progressi {expanded ? '▴' : '▾'}
       </button>
       {#if expanded}
         <div class="save-box" transition:slide={{ duration: motionMs(180) }}>
           {#if authStore.status === 'sent'}
-            <p class="msg ok" role="status">✅ {authStore.message}</p>
+            <p class="msg ok" role="status">{authStore.message}</p>
           {:else}
             <p class="blurb">Inserisci la tua email: ricevi un link per ritrovare progressi e classifica su ogni dispositivo. Nessuna password.</p>
             <div class="row">
@@ -55,7 +56,7 @@
               </button>
             </div>
             {#if authStore.status === 'error'}
-              <p class="msg err" role="status">⚠️ {authStore.message}</p>
+              <p class="msg err" role="status">{authStore.message}</p>
             {/if}
           {/if}
         </div>
@@ -66,19 +67,28 @@
 
 <style>
   .auth {
-    margin-top: 4px;
+    margin-top: 0;
   }
   .who {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: var(--surface);
+    background: color-mix(in srgb, var(--surface) 88%, var(--surface-2));
     border: 1px solid var(--border);
     border-radius: 999px;
     padding: 6px 12px;
-    font-weight: 700;
+    font-weight: 750;
     font-size: 0.82rem;
     color: var(--ink);
+  }
+  .auth-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    opacity: 0.86;
+  }
+  :global([data-theme='dark']) .auth-icon {
+    filter: invert(1) sepia(0.14) saturate(0.8) brightness(1.16) contrast(1.05);
   }
   .who-txt {
     flex: 1;
@@ -88,26 +98,30 @@
   }
   .email {
     color: var(--ink-soft);
-    font-weight: 600;
+    font-weight: 650;
   }
   .link {
     flex: 0 0 auto;
     background: none;
     border: none;
-    color: var(--blu);
+    color: var(--primary);
     font: inherit;
-    font-weight: 800;
+    font-weight: 900;
     cursor: pointer;
     padding: 2px 4px;
     min-height: 0;
   }
   .save-toggle {
     width: 100%;
-    background: var(--surface);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    background: transparent;
     border: 1px dashed var(--border);
-    border-radius: 14px;
-    padding: 9px 12px;
-    font-weight: 700;
+    border-radius: var(--radius-xs);
+    padding: 8px 12px;
+    font-weight: 800;
     font-size: 0.85rem;
     color: var(--ink-soft);
     cursor: pointer;
@@ -128,18 +142,18 @@
   .email-box {
     flex: 1;
     padding: 11px 14px;
-    border: 2px solid var(--border);
-    border-radius: 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-xs);
     /* >=16px prevents iOS Safari zoom on focus */
     font-size: max(16px, 0.98rem);
     font-family: inherit;
-    font-weight: 600;
+    font-weight: 650;
     background: var(--surface);
     color: var(--ink);
   }
   .email-box:focus {
     outline: none;
-    border-color: var(--blu);
+    border-color: var(--primary);
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent);
   }
   .send {
@@ -147,10 +161,10 @@
     padding: 0 18px;
     min-height: 44px;
     border: none;
-    border-radius: 14px;
-    background: var(--blu);
+    border-radius: var(--radius-xs);
+    background: var(--primary);
     color: #fff;
-    font-weight: 800;
+    font-weight: 900;
     cursor: pointer;
   }
   .send:disabled {

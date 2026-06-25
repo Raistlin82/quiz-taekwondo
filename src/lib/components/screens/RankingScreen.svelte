@@ -10,15 +10,16 @@
   let errored = $state(false);
 
   const medals = ['🥇', '🥈', '🥉'];
-  // The board is keyed by NAME (aggregated from scores). Identify the current
-  // player by their display/guest name; auth may resolve after mount.
-  const myName = $derived((authStore.displayName ?? gameStore.playerName ?? '').trim());
-  const me = $derived.by(() => (myName ? (rows.find((r) => r.name === myName) ?? null) : null));
+  // The board is keyed by the NAME written to scores (= gameStore.playerName).
+  // Prefer that over the email-derived displayName, and match case-insensitively
+  // (the board aggregates names case-insensitively too).
+  const myKey = $derived((gameStore.playerName.trim() || authStore.displayName || '').trim().toLowerCase());
+  const me = $derived.by(() => (myKey ? (rows.find((r) => r.name.toLowerCase() === myKey) ?? null) : null));
 
   // Top 20, plus the player's own row if they rank lower.
   const display = $derived.by(() => {
     const top = rows.slice(0, 20).map((r, i) => ({ row: r, rank: i }));
-    const myIndex = myName ? rows.findIndex((r) => r.name === myName) : -1;
+    const myIndex = myKey ? rows.findIndex((r) => r.name.toLowerCase() === myKey) : -1;
     if (myIndex >= 20) top.push({ row: rows[myIndex], rank: myIndex });
     return top;
   });
@@ -82,7 +83,7 @@
   {:else}
     <div role="list" class="list">
       {#each display as { row, rank } (row.name)}
-        {@const mine = row.name === myName}
+        {@const mine = !!myKey && row.name.toLowerCase() === myKey}
         <div class="row" class:me={mine} role="listitem" aria-current={mine ? 'true' : undefined}>
           <span class="rank">{medals[rank] ?? rank + 1}</span>
           <span class="name">{row.name || 'Anonimo'}{#if mine}<span class="sr-only"> (tu)</span>{/if}</span>
@@ -100,7 +101,6 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 8px;
-    padding-right: var(--controls-gutter);
     min-height: 44px;
   }
   .restart-btn {

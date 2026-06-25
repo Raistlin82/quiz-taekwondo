@@ -4,6 +4,7 @@
    ============================================================ */
 
 import { THEME_KEY, SETTINGS_KEY } from '../config';
+import { playSound } from '../audio';
 
 type ThemeName = 'light' | 'dark';
 
@@ -50,7 +51,7 @@ class ThemeStore {
   apply(): void {
     document.documentElement.setAttribute('data-theme', this.theme);
     const meta = document.querySelector('meta[name="theme-color"]');
-    meta?.setAttribute('content', this.theme === 'dark' ? '#0b0f14' : '#f7f8fa');
+    meta?.setAttribute('content', this.theme === 'dark' ? '#17120f' : '#e8ddc7');
   }
 
   toggleTheme(): void {
@@ -62,6 +63,7 @@ class ThemeStore {
   toggleSound(): void {
     this.sound = !this.sound;
     this.persistSettings();
+    if (this.sound) playSound('badge', true);
   }
 
   toggleMusic(): void {

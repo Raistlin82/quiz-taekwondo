@@ -4,82 +4,93 @@
   interface Props {
     score: number;
     total: number;
-    emoji: string;
+    emoji?: string;
   }
-  let { score, total, emoji }: Props = $props();
+  let { score, total }: Props = $props();
 
-  const CIRC = 389.6; // 2πr, r=62
   const pct = $derived(total ? score / total : 0);
-
-  // Ring sweep: start full, animate to target after mount.
-  let offset = $state(CIRC);
-  // Score counts up 0 → score (jumps under reduced motion).
+  const percent = $derived(Math.round(pct * 100));
+  const passed = $derived(pct >= 0.87);
+  const ringSrc = $derived(passed ? '/ui/brush-ring-green.png' : '/ui/brush-ring-red.png');
   let shown = $state(0);
 
   $effect(() => {
-    const target = CIRC * (1 - pct);
     if (prefersReducedMotion()) {
-      offset = target;
       shown = score;
       return;
     }
-    const t = setTimeout(() => (offset = target), 60);
     let raf = 0;
     const start = performance.now();
-    const dur = 900;
+    const dur = 850;
     const tick = (now: number) => {
       const p = Math.min(1, (now - start) / dur);
       shown = Math.round(p * score);
       if (p < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () => {
-      clearTimeout(t);
-      cancelAnimationFrame(raf);
-    };
+    return () => cancelAnimationFrame(raf);
   });
 </script>
 
-<div class="ring-wrap">
-  <svg width="150" height="150" viewBox="0 0 150 150" role="img" aria-label="Punteggio: {score} su {total}">
-    <defs>
-      <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="var(--success)" />
-        <stop offset="1" stop-color="var(--primary)" />
-      </linearGradient>
-    </defs>
-    <circle cx="75" cy="75" r="62" fill="none" stroke="var(--track)" stroke-width="14" />
-    <circle
-      cx="75"
-      cy="75"
-      r="62"
-      fill="none"
-      stroke="url(#ring)"
-      stroke-width="14"
-      stroke-linecap="round"
-      stroke-dasharray={CIRC}
-      stroke-dashoffset={offset}
-      transform="rotate(-90 75 75)"
-      style="transition: stroke-dashoffset 1s cubic-bezier(.2,.9,.3,1)"
-    />
-    <text x="75" y="66" text-anchor="middle" font-size="34" aria-hidden="true">{emoji}</text>
-    <text
-      x="75"
-      y="98"
-      text-anchor="middle"
-      font-family="Space Grotesk"
-      font-weight="700"
-      font-size="22"
-      fill="var(--ink)"
-      aria-hidden="true">{shown}/{total}</text
-    >
-  </svg>
+<div class="ring-wrap" class:passed>
+  <img class="ring-img" src={ringSrc} alt="" aria-hidden="true" />
+  <div class="score-text" aria-label="Punteggio: {score} su {total}, {percent}%">
+    <div class="score-line"><span class="score">{shown}</span><span class="total">/{total}</span></div>
+    <span class="pct">{percent}%</span>
+  </div>
 </div>
 
 <style>
   .ring-wrap {
+    position: relative;
+    width: 212px;
+    height: 212px;
+    display: grid;
+    place-items: center;
+    margin: -8px auto -4px;
+  }
+  .ring-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 14px 24px color-mix(in srgb, var(--ink) 12%, transparent));
+  }
+  .score-text {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    margin-top: 2px;
+    color: var(--danger-d);
+    font-family: var(--font-display);
+    font-variant-numeric: lining-nums tabular-nums;
+    text-align: center;
+  }
+  .passed .score-text {
+    color: var(--success-d);
+  }
+  .score-line {
     display: flex;
+    align-items: baseline;
     justify-content: center;
-    margin: 6px 0 2px;
+    min-width: 120px;
+  }
+  .score {
+    font-size: 3.8rem;
+    font-weight: 800;
+    line-height: 0.95;
+  }
+  .total {
+    margin-left: 6px;
+    color: var(--ink);
+    font-size: 1.72rem;
+    font-weight: 700;
+  }
+  .pct {
+    margin-top: 4px;
+    font-size: 1.08rem;
+    font-weight: 800;
   }
 </style>

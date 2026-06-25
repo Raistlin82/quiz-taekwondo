@@ -1,72 +1,48 @@
 <script lang="ts">
-  import { DIFFICULTIES, type DifficultyKey } from '../data/belts';
+  import { DIFFICULTIES, type Difficulty, type DifficultyKey } from '../data/belts';
   let { value = $bindable() }: { value: DifficultyKey } = $props();
   const items = Object.values(DIFFICULTIES);
+  // One display label for both the visible text and the accessible name
+  // (WCAG 2.5.3 Label in Name): the data value is "Tosto", shown as "Difficile".
+  const labelOf = (d: Difficulty) => (d.nm === 'Tosto' ? 'Difficile' : d.nm);
 </script>
 
-<div class="diff-grid" role="group" aria-label="Scegli il livello di difficoltà">
+<div class="diff-segment" role="group" aria-label="Scegli il livello di difficoltà">
   {#each items as d (d.key)}
     <button
       type="button"
-      class="diff-opt"
       class:sel={d.key === value}
       aria-pressed={d.key === value}
-      aria-label={`${d.nm}: ${d.ds}`}
+      aria-label={`${labelOf(d)}: ${d.ds}`}
       onclick={() => (value = d.key)}
     >
-      <div class="em">{d.em}</div>
-      <div class="nm">{d.nm}</div>
-      <div class="ds">{d.ds}</div>
+      {labelOf(d)}
     </button>
   {/each}
 </div>
 
 <style>
-  .diff-grid {
+  .diff-segment {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 9px;
+    min-height: 42px;
+    overflow: hidden;
+    border: 1.5px solid var(--border);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 88%, var(--surface-2));
   }
-  .diff-opt {
-    background: var(--surface);
-    border: 2px solid var(--border);
-    border-radius: 16px;
-    padding: 12px 6px;
-    cursor: pointer;
-    text-align: center;
-    transition:
-      transform 0.12s,
-      border-color 0.15s,
-      box-shadow 0.15s;
-  }
-  @media (hover: hover) {
-    .diff-opt:hover {
-      transform: translateY(-2px);
-      border-color: var(--border-strong);
-    }
-  }
-  .diff-opt:active {
-    transform: translateY(0) scale(0.98);
-  }
-  .diff-opt.sel {
-    border-color: var(--accent);
-    background: var(--primary-soft);
-    box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--primary) 45%, transparent);
-  }
-  .em {
-    font-size: 1.5rem;
-  }
-  .nm {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 0.95rem;
-    margin-top: 2px;
+  button {
+    min-height: 42px;
+    border-radius: 999px;
+    background: transparent;
     color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 0.86rem;
+    font-weight: 650;
   }
-  .ds {
-    font-size: 0.72rem;
-    color: var(--ink-soft);
-    font-weight: 600;
-    margin-top: 2px;
+  button.sel {
+    color: #fff;
+    background: var(--primary);
+    box-shadow: 0 8px 16px -12px var(--primary);
   }
 </style>

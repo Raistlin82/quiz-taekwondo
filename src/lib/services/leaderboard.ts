@@ -169,8 +169,10 @@ export async function submitAndFetch(
       if (!supabase) throw new Error('no client');
       const row = { ...base, secs, user_id: userId ?? null };
       let res = await supabase.from('scores').insert(row).select().single();
-      // If the optional `secs` column doesn't exist yet, retry without it.
-      if (res.error) {
+      // Retry without `secs` ONLY when that column is missing (PostgREST
+      // PGRST204) — not on RLS/network errors, where a blind retry could write a
+      // duplicate row (first insert may have committed) or just waste a call.
+      if (res.error && (res.error.code === 'PGRST204' || /secs/i.test(res.error.message ?? ''))) {
         res = await supabase
           .from('scores')
           .insert({ ...base, user_id: userId ?? null })

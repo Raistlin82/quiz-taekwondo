@@ -1,102 +1,82 @@
 <script lang="ts">
-  import { BELTS } from '../data/belts';
+  import { BELTS, beltById } from '../data/belts';
+  import BeltDot from './BeltDot.svelte';
+
   let { value = $bindable() }: { value: number } = $props();
+  const selected = $derived(beltById(value) ?? BELTS[0]);
 </script>
 
-<div class="belt-grid" role="group" aria-label="Scegli la cintura d'esame">
-  {#each BELTS as b (b.id)}
-    <button
-      type="button"
-      class="belt-opt"
-      class:sel={b.id === value}
-      aria-pressed={b.id === value}
-      onclick={() => (value = b.id)}
-    >
-      <div class="mini" style="background:{b.main}">
-        {#if b.stripe}<span class="str" style="background:{b.stripe}"></span>{/if}
-      </div>
-      {b.name}
-      <div class="tick">✓</div>
-    </button>
-  {/each}
-</div>
+<label class="belt-select">
+  <span class="face" aria-hidden="true">
+    <span class="belt-icon"><BeltDot belt={selected} /></span>
+    <span class="belt-name">{selected.name}</span>
+    <span class="chev">⌄</span>
+  </span>
+  <span class="sr-only">Scegli la cintura d'esame</span>
+  <select bind:value aria-label="Scegli la cintura d'esame">
+    {#each BELTS as b (b.id)}
+      <option value={b.id}>{b.name}</option>
+    {/each}
+  </select>
+</label>
 
 <style>
-  .belt-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: 9px;
-  }
-  .belt-opt {
-    background: var(--surface);
-    border: 2px solid var(--border);
-    border-radius: 16px;
-    padding: 9px 6px 8px;
-    cursor: pointer;
-    text-align: center;
-    transition:
-      transform 0.12s,
-      border-color 0.15s,
-      box-shadow 0.15s;
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 0.76rem;
-    color: var(--ink-soft);
-    line-height: 1.05;
-  }
-  @media (hover: hover) {
-    .belt-opt:hover {
-      transform: translateY(-2px);
-      border-color: var(--border-strong);
-    }
-  }
-  .belt-opt:active {
-    transform: translateY(0) scale(0.98);
-  }
-  .belt-opt.sel {
-    border-color: var(--accent);
-    background: var(--primary-soft);
-    box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--primary) 45%, transparent);
-    color: var(--ink);
-  }
-  .mini {
-    height: 16px;
-    border-radius: 6px;
-    margin-bottom: 6px;
+  .belt-select {
     position: relative;
+    display: block;
+    min-height: 50px;
+  }
+  .face {
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--surface) 92%, var(--surface-2));
+    box-shadow: 0 8px 18px -16px rgba(45, 28, 14, 0.45);
+  }
+  .belt-icon {
+    width: 76px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .belt-name {
+    flex: 1;
+    min-width: 0;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 850;
     overflow: hidden;
-    border: 1px solid var(--belt-brd);
-    transition: 0.15s;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
-  .belt-opt.sel .mini {
-    transform: scale(1.05);
+  .chev {
+    color: var(--ink-soft);
+    font-size: 1.1rem;
+    font-weight: 900;
   }
-  .mini .str {
+  select {
     position: absolute;
-    left: 0;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    height: 5px;
-  }
-  .tick {
-    font-size: 0.66rem;
-    color: var(--blu);
+    inset: 0;
+    width: 100%;
+    height: 100%;
     opacity: 0;
-    margin-top: 2px;
+    cursor: pointer;
   }
-  .belt-opt.sel .tick {
-    opacity: 1;
+  /* The native <select> is transparent, so surface keyboard focus on the
+     visible .face instead (keyboard parity with the difficulty picker). */
+  .belt-select:has(select:focus-visible) .face {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
   }
-  /* clean 4×2 grid on phones instead of a ragged 3+3+2 */
-  @media (max-width: 420px) {
-    .belt-grid {
-      grid-template-columns: repeat(4, 1fr);
-    }
-    .belt-opt {
-      font-size: 0.72rem;
-      line-height: 1.15;
-      min-height: 64px;
+  @supports not selector(:has(*)) {
+    .belt-select:focus-within .face {
+      outline: 3px solid var(--primary);
+      outline-offset: 2px;
     }
   }
 </style>

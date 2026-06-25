@@ -8,7 +8,7 @@
     onpick: () => void;
   }
   let { letter, text, state, locked, delay = 0, onpick }: Props = $props();
-  const mark = $derived(state === 'correct' ? '✅' : state === 'wrong' ? '❌' : '');
+  const mark = $derived(state === 'correct' ? '✓' : state === 'wrong' ? '×' : '');
   const outcome = $derived(
     state === 'correct' ? ' — risposta corretta' : state === 'wrong' ? ' — risposta sbagliata' : '',
   );
@@ -31,18 +31,20 @@
 <style>
   .ans {
     width: 100%;
-    background: var(--surface);
-    border: 2px solid var(--border);
-    border-radius: 14px;
-    padding: 13px 15px;
+    min-height: 62px;
+    background: color-mix(in srgb, var(--surface) 92%, var(--surface-2));
+    border: 1.4px solid var(--border);
+    border-radius: 12px;
+    padding: 11px 14px;
     text-align: left;
     font-family: var(--font-body);
-    font-weight: 700;
-    font-size: 1.02rem;
+    font-weight: 750;
+    font-size: 1rem;
     color: var(--ink);
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 13px;
+    box-shadow: 0 8px 18px -17px rgba(42, 28, 15, 0.55);
     transition:
       transform 0.12s,
       border-color 0.15s,
@@ -50,28 +52,32 @@
       box-shadow 0.15s;
     animation: slideIn 0.35s both;
   }
-  @media (hover: hover) {
+  @media (hover: hover) and (pointer: fine) {
     .ans:not(.locked):hover {
-      border-color: var(--blu);
-      background: color-mix(in srgb, var(--blu) 8%, var(--surface));
-      transform: translateX(4px);
-      box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--primary) 45%, transparent);
+      border-color: var(--primary);
+      background: var(--primary-soft);
+      transform: translateX(3px);
+      box-shadow: 0 9px 20px -16px color-mix(in srgb, var(--primary) 45%, transparent);
     }
     .ans:not(.locked):hover .tag {
-      background: var(--blu);
-      color: #fff;
+      border-color: var(--primary);
+      color: var(--primary-d);
     }
   }
   .ans:not(.locked):active {
-    transform: scale(0.98);
-    box-shadow: 0 2px 8px -4px rgba(0, 0, 0, 0.35);
+    transform: scale(0.985);
+  }
+  .ans:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--ink-soft) 26%, transparent);
+    outline-offset: 2px;
   }
   .tag {
     flex: 0 0 34px;
     width: 34px;
     height: 34px;
-    border-radius: 11px;
-    background: var(--surface-2);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--surface) 78%, var(--surface-2));
+    border: 1.2px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -82,42 +88,53 @@
   }
   .txt {
     flex: 1;
+    min-width: 0;
+    line-height: 1.25;
   }
   .mark {
-    font-size: 1.2rem;
+    flex: 0 0 26px;
+    color: currentColor;
+    font-family: var(--font-display);
+    font-size: 1.7rem;
+    font-weight: 900;
+    text-align: center;
   }
   .ans.locked {
     cursor: default;
   }
   .ans.correct {
-    border-color: var(--verde);
-    background: color-mix(in srgb, var(--verde) 14%, var(--surface));
-    animation: correctPop 0.4s var(--ease-spring);
+    border-color: var(--success);
+    background: color-mix(in srgb, var(--success-soft) 78%, var(--surface));
+    color: var(--success-d);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--success) 22%, transparent);
+    animation: correctPop 0.34s var(--ease-spring);
   }
   .ans.correct .tag {
-    background: var(--verde);
+    background: var(--success);
+    border-color: var(--success);
     color: #fff;
   }
   .ans.wrong {
-    border-color: var(--rosso);
-    background: color-mix(in srgb, var(--rosso) 12%, var(--surface));
-    animation: wrongShake 0.4s ease;
+    border-color: var(--danger);
+    background: color-mix(in srgb, var(--danger) 12%, var(--surface));
+    color: var(--danger-d);
+    animation: wrongShake 0.34s ease;
   }
   .ans.wrong .tag {
-    background: var(--rosso);
+    background: var(--danger);
+    border-color: var(--danger);
     color: #fff;
   }
-  /* ink-strike on the wrongly chosen answer (Hanji) */
   .ans.wrong .txt {
     text-decoration: line-through;
-    text-decoration-color: color-mix(in srgb, var(--rosso) 70%, transparent);
+    text-decoration-color: color-mix(in srgb, var(--danger) 70%, transparent);
     text-decoration-thickness: 2px;
   }
   .ans.dim {
-    opacity: 0.5;
+    opacity: 0.58;
   }
   .mark:not(:empty) {
-    animation: markIn 0.3s var(--ease-spring) both;
+    animation: markIn 0.25s var(--ease-spring) both;
   }
   @keyframes slideIn {
     from {
@@ -134,7 +151,7 @@
       transform: scale(1);
     }
     50% {
-      transform: scale(1.03);
+      transform: scale(1.025);
     }
     100% {
       transform: scale(1);
@@ -145,22 +162,19 @@
     100% {
       transform: translateX(0);
     }
-    20% {
-      transform: translateX(-6px);
+    25% {
+      transform: translateX(-5px);
     }
-    40% {
-      transform: translateX(5px);
+    50% {
+      transform: translateX(4px);
     }
-    60% {
-      transform: translateX(-3px);
-    }
-    80% {
-      transform: translateX(2px);
+    75% {
+      transform: translateX(-2px);
     }
   }
   @keyframes markIn {
     from {
-      transform: scale(0.4);
+      transform: scale(0.35);
       opacity: 0;
     }
     to {

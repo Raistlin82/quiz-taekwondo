@@ -1,29 +1,22 @@
 <script lang="ts">
   import type { Belt } from '../data/belts';
-  let { belt, size = 22, height = 10 }: { belt: Belt; size?: number; height?: number } = $props();
+  let { belt, size = 72, height = 27 }: { belt: Belt; size?: number; height?: number } = $props();
 </script>
 
-<span class="dot" style="width:{size}px;height:{height}px;background:{belt.main}">
-  {#if belt.stripe}
-    <span class="str" style="background:{belt.stripe}"></span>
-  {/if}
+<span class="belt-art" style="width:{size}px;height:{height}px">
+  <img src={`/ui/belts/belt-${belt.id}.png`} alt={belt.name} loading="lazy" />
 </span>
 
 <style>
-  .dot {
-    border-radius: 4px;
-    position: relative;
-    overflow: hidden;
-    display: inline-block;
+  .belt-art {
+    display: inline-grid;
+    place-items: center;
     flex: 0 0 auto;
-    border: 1px solid var(--belt-brd);
   }
-  .str {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    height: 40%;
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 4px 5px rgba(45, 28, 14, 0.18));
   }
 </style>

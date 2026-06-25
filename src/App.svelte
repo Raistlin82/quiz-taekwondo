@@ -5,8 +5,8 @@
   import { startMusic, stopMusic } from './lib/music';
   import { motionMs } from './lib/motion';
 
-  // Drive the background-music engine off the persisted setting. Toggling the
-  // 🎵 button is a user gesture, so the AudioContext can resume and play.
+  // Drive the background-music engine off the persisted setting. The toggle is
+  // a user gesture, so the AudioContext can resume and play.
   $effect(() => {
     if (themeStore.music) startMusic();
     else stopMusic();
@@ -24,10 +24,10 @@
 <div class="app">
   <div class="controls">
     <button class="icon-btn" title="Tema chiaro/scuro" aria-label="Cambia tema" onclick={() => themeStore.toggleTheme()}>
-      {themeStore.theme === 'dark' ? '🌙' : '☀️'}
+      <img src={themeStore.theme === 'dark' ? '/ui/icons/theme-dark.png' : '/ui/icons/theme-light.png'} alt="" aria-hidden="true" />
     </button>
     <button class="icon-btn" title="Suono on/off" aria-label="Suono" onclick={() => themeStore.toggleSound()}>
-      {themeStore.sound ? '🔊' : '🔇'}
+      <img src={themeStore.sound ? '/ui/icons/sound-on.png' : '/ui/icons/sound-off.png'} alt="" aria-hidden="true" />
     </button>
     <button
       class="icon-btn"
@@ -37,7 +37,7 @@
       aria-pressed={themeStore.music}
       onclick={() => themeStore.toggleMusic()}
     >
-      🎵
+      <img src={themeStore.music ? '/ui/icons/music-on.png' : '/ui/icons/music-off.png'} alt="" aria-hidden="true" />
     </button>
   </div>
 

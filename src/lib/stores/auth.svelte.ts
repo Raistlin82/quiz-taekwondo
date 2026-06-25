@@ -199,7 +199,14 @@ class AuthStore {
       const { data } = await supabase.auth.signInAnonymously();
       this.applyUser(data.user ?? null);
     } catch {
-      this.applyUser(null);
+      // signOut may have cleared the server session before throwing — try to
+      // recover a guest session so score writes keep working without a reload.
+      try {
+        const { data } = await supabase.auth.signInAnonymously();
+        this.applyUser(data.user ?? null);
+      } catch {
+        this.applyUser(null);
+      }
     }
   }
 

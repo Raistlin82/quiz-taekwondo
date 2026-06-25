@@ -158,23 +158,28 @@ export async function fetchCareerBoard(): Promise<CareerEntry[] | null> {
       .limit(5000);
     if (error) return null;
 
+    // Key by a normalized name (trim + lowercase) so "Mario" / "mario" / "Mario "
+    // are one player; keep the first-seen casing for display.
+    const norm = (n?: string | null) => (n ?? '').trim().toLowerCase();
+
     const { data: profs } = await supabase.from('profiles').select('name,xp,level,badges');
-    const profByName = new Map((profs ?? []).map((p) => [p.name, p]));
+    const profByName = new Map((profs ?? []).map((p) => [norm(p.name), p]));
 
     const agg = new Map<string, { name: string; cumPoints: number; byColor: Record<string, number> }>();
     for (const s of scores ?? []) {
-      const name = (s.name ?? '').trim();
-      if (!name || JUNK_NAMES.has(name) || name.toLowerCase() === 'ospite') continue;
+      const display = (s.name ?? '').trim();
+      const key = norm(s.name);
+      if (!key || JUNK_NAMES.has(key) || key === 'ospite') continue;
       const pts = leaderboardPoints(s.pct, s.diff);
-      const e = agg.get(name) ?? { name, cumPoints: 0, byColor: {} as Record<string, number> };
+      const e = agg.get(key) ?? { name: display, cumPoints: 0, byColor: {} as Record<string, number> };
       e.cumPoints += pts;
       const label = beltGroupOf(s.belt).label;
       e.byColor[label] = (e.byColor[label] ?? 0) + pts;
-      agg.set(name, e);
+      agg.set(key, e);
     }
 
     const entries: CareerEntry[] = [...agg.values()].map((e) => {
-      const prof = profByName.get(e.name) as { xp?: number; level?: number; badges?: number } | undefined;
+      const prof = profByName.get(norm(e.name)) as { xp?: number; level?: number; badges?: number } | undefined;
       const xp = prof?.xp ?? 0;
       const badges = prof?.badges ?? 0;
       const level = prof?.level ?? 1;
