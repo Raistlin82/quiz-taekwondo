@@ -24,10 +24,10 @@
 <div class="app">
   <div class="controls">
     <button class="icon-btn" title="Tema chiaro/scuro" aria-label="Cambia tema" onclick={() => themeStore.toggleTheme()}>
-      <img src={themeStore.theme === 'dark' ? '/ui/icons/theme-dark.png' : '/ui/icons/theme-light.png'} alt="" aria-hidden="true" />
+      <img src={themeStore.theme === 'dark' ? 'ui/icons/theme-dark.png' : 'ui/icons/theme-light.png'} alt="" aria-hidden="true" />
     </button>
     <button class="icon-btn" title="Suono on/off" aria-label="Suono" onclick={() => themeStore.toggleSound()}>
-      <img src={themeStore.sound ? '/ui/icons/sound-on.png' : '/ui/icons/sound-off.png'} alt="" aria-hidden="true" />
+      <img src={themeStore.sound ? 'ui/icons/sound-on.png' : 'ui/icons/sound-off.png'} alt="" aria-hidden="true" />
     </button>
     <button
       class="icon-btn"
@@ -37,7 +37,7 @@
       aria-pressed={themeStore.music}
       onclick={() => themeStore.toggleMusic()}
     >
-      <img src={themeStore.music ? '/ui/icons/music-on.png' : '/ui/icons/music-off.png'} alt="" aria-hidden="true" />
+      <img src={themeStore.music ? 'ui/icons/music-on.png' : 'ui/icons/music-off.png'} alt="" aria-hidden="true" />
     </button>
   </div>
 

@@ -4,7 +4,7 @@
 </script>
 
 <span class="belt-art" style="width:{size}px;height:{height}px">
-  <img src={`/ui/belts/belt-${belt.id}.png`} alt={belt.name} loading="lazy" />
+  <img src={`ui/belts/belt-${belt.id}.png`} alt={belt.name} loading="lazy" />
 </span>
 
 <style>

@@ -24,7 +24,7 @@
   <div class="auth">
     {#if authStore.isLoggedIn}
       <div class="who">
-        <img class="auth-icon" src="/ui/icons/person.png" alt="" aria-hidden="true" />
+        <img class="auth-icon" src="ui/icons/person.png" alt="" aria-hidden="true" />
         <span class="who-txt" title={authStore.email ?? ''}>
           {authStore.displayName}<span class="email"> · {authStore.email}</span>
         </span>
@@ -32,7 +32,7 @@
       </div>
     {:else}
       <button class="save-toggle" onclick={toggle} aria-expanded={expanded}>
-        <img class="auth-icon" src="/ui/icons/person.png" alt="" aria-hidden="true" />
+        <img class="auth-icon" src="ui/icons/person.png" alt="" aria-hidden="true" />
         Salva i progressi {expanded ? '▴' : '▾'}
       </button>
       {#if expanded}

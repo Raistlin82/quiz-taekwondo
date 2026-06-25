@@ -11,7 +11,7 @@
   const pct = $derived(total ? score / total : 0);
   const percent = $derived(Math.round(pct * 100));
   const passed = $derived(pct >= 0.87);
-  const ringSrc = $derived(passed ? '/ui/brush-ring-green.png' : '/ui/brush-ring-red.png');
+  const ringSrc = $derived(passed ? 'ui/brush-ring-green.png' : 'ui/brush-ring-red.png');
   let shown = $state(0);
 
   $effect(() => {

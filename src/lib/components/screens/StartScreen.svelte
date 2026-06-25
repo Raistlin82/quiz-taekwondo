@@ -43,7 +43,7 @@
   <header class="brand">
     <div>
       <div class="brand-name">
-        <img class="logo-wordmark" src="/ui/logo-taekwondo-itf.png" alt="Taekwon-Do ITF" />
+        <img class="logo-wordmark" src="ui/logo-taekwondo-itf.png" alt="Taekwon-Do ITF" />
         <span class="seal" aria-hidden="true">武</span>
       </div>
       <h1>Esame Cinture</h1>
@@ -53,7 +53,7 @@
   <div class="ink-wash" aria-hidden="true"></div>
 
   <div class="player-card" aria-label="Progressi giocatore">
-    <div class="avatar"><img src="/ui/dobok-avatar.png" alt="" /></div>
+    <div class="avatar"><img src="ui/dobok-avatar.png" alt="" /></div>
     <div class="player-main">
       <div class="player-line">
         <b>Lv {lvl.level}</b>
@@ -91,7 +91,7 @@
 
   <div class="secondary">
     <button class="ghost" onclick={() => gameStore.goStudy()}>
-      <img src="/ui/icons/book.png" alt="" />Studia
+      <img src="ui/icons/book.png" alt="" />Studia
     </button>
     <button
       class="ghost ripasso"
@@ -105,7 +105,7 @@
         : 'Ripasso non disponibile: nessuna domanda da rivedere'}
       onclick={() => gameStore.startReview()}
     >
-      <img src="/ui/icons/review.png" alt="" />Ripassa errori{due > 0 ? ` (${due})` : ''}
+      <img src="ui/icons/review.png" alt="" />Ripassa errori{due > 0 ? ` (${due})` : ''}
     </button>
   </div>
 
@@ -131,9 +131,9 @@
   {/if}
 
   <nav class="bottom-nav" aria-label="Navigazione principale">
-    <button class="active" aria-current="page"><img src="/ui/icons/home.png" alt="" /><span>Home</span></button>
-    <button onclick={() => gameStore.goRanking()}><img src="/ui/icons/chart.png" alt="" /><span>Statistiche</span></button>
-    <button onclick={() => (settingsOpen = !settingsOpen)}><img src="/ui/icons/settings.png" alt="" /><span>Impostazioni</span></button>
+    <button class="active" aria-current="page"><img src="ui/icons/home.png" alt="" /><span>Home</span></button>
+    <button onclick={() => gameStore.goRanking()}><img src="ui/icons/chart.png" alt="" /><span>Statistiche</span></button>
+    <button onclick={() => (settingsOpen = !settingsOpen)}><img src="ui/icons/settings.png" alt="" /><span>Impostazioni</span></button>
   </nav>
 </section>
 
@@ -196,7 +196,7 @@
   .ink-wash {
     height: 38px;
     margin: -7px -18px -6px;
-    background: url('/ui/ink-mountains.png') center bottom / 100% auto no-repeat;
+    background: var(--img-ink-mountains) center bottom / 100% auto no-repeat;
     opacity: 0.55;
   }
   :global([data-theme='dark']) .ink-wash {
@@ -324,7 +324,7 @@
     border-radius: 9px;
     background:
       linear-gradient(rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.08)),
-      url('/ui/red-brush-button.png') center / 100% 100% no-repeat,
+      var(--img-brush) center / 100% 100% no-repeat,
       var(--primary);
     box-shadow: 0 13px 24px -18px rgba(97, 28, 22, 0.9);
   }

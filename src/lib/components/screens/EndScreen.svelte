@@ -140,7 +140,7 @@
   </header>
 
   <div class="result-art" class:review={isReview}>
-    <img class="pine" src="/ui/pine-branch.png" alt="" aria-hidden="true" />
+    <img class="pine" src="ui/pine-branch.png" alt="" aria-hidden="true" />
     <ScoreRing score={gameStore.score} total={gameStore.total} />
     <div class="hangul" aria-hidden="true">태<br />권<br />도<span>禮</span></div>
   </div>
@@ -153,7 +153,7 @@
 
   <div class="summary-pair">
     <div class="stat-card">
-      <img class="stat-icon" src="/ui/icons/book.png" alt="" aria-hidden="true" />
+      <img class="stat-icon" src="ui/icons/book.png" alt="" aria-hidden="true" />
       <span>Da ripassare</span>
       <b>{gameStore.wrong.length}</b>
     </div>
@@ -185,7 +185,7 @@
               {@const mine = row.id === myId}
               <div class="rank-row" class:mine={mine} role="listitem" aria-current={mine ? 'true' : undefined}>
                 <span class="rank-medal r{rank + 1}" aria-hidden="true">{rankBadge(rank)}</span>
-                <span class="rank-avatar" aria-hidden="true"><img src="/ui/dobok-avatar.png" alt="" /></span>
+                <span class="rank-avatar" aria-hidden="true"><img src="ui/dobok-avatar.png" alt="" /></span>
                 <span class="rank-name">{row.name}{#if mine} <em>(Tu)</em>{/if}</span>
                 <span class="rank-score">{row.score}/{row.total}</span>
                 <span class="rank-xp">{row.points ?? percent} XP</span>
@@ -219,11 +219,11 @@
 
   <div class="actions">
     <button class="cta replay" onclick={() => (isReview ? gameStore.startReview() : gameStore.startQuiz())}>
-      <img src="/ui/icons/review.png" alt="" aria-hidden="true" />
+      <img src="ui/icons/review.png" alt="" aria-hidden="true" />
       {isReview ? 'Altro ripasso' : 'Rigioca'}
     </button>
     <button class="ghost home" onclick={() => gameStore.goHome()}>
-      <img src="/ui/icons/home.png" alt="" aria-hidden="true" />
+      <img src="ui/icons/home.png" alt="" aria-hidden="true" />
       Home
     </button>
   </div>

@@ -34,7 +34,7 @@
     <button class="back-btn" aria-label="Torna alla home" onclick={() => gameStore.goHome()}>‹</button>
     <div class="qnum">Domanda {gameStore.idx + 1} / {gameStore.total}</div>
     <div class="streak" id="scorePill" aria-label="Serie attuale">
-      <img src="/ui/icons/flame.png" alt="" aria-hidden="true" />{gameStore.streak || gameStore.score}
+      <img src="ui/icons/flame.png" alt="" aria-hidden="true" />{gameStore.streak || gameStore.score}
     </div>
   </header>
 
@@ -46,7 +46,7 @@
     </div>
 
     <div class="cat-row">
-      <span class="cat" aria-hidden="true"><img src="/ui/icons/category.png" alt="" />{q.cat.replace(/^[^\s]+\s*/, '')}</span>
+      <span class="cat" aria-hidden="true"><img src="ui/icons/category.png" alt="" />{q.cat.replace(/^[^\s]+\s*/, '')}</span>
       {#if gameStore.isReview}<span class="review-flag">Ripasso</span>{/if}
     </div>
 
@@ -244,7 +244,7 @@
     border-radius: 9px;
     background:
       linear-gradient(rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.08)),
-      url('/ui/red-brush-button.png') center / 100% 100% no-repeat,
+      var(--img-brush) center / 100% 100% no-repeat,
       var(--primary);
   }
 </style>

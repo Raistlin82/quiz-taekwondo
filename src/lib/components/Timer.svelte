@@ -7,7 +7,7 @@
 </script>
 
 <div class="timer" role="timer" aria-label="Tempo rimasto: {secs} second{secs === 1 ? 'o' : 'i'}">
-  <img class="timer-icon" src="/ui/icons/hourglass.png" alt="" aria-hidden="true" />
+  <img class="timer-icon" src="ui/icons/hourglass.png" alt="" aria-hidden="true" />
   <div class="timer-track" class:warn aria-hidden="true">
     <div class="timer-fill" style="width:{pct}%"></div>
   </div>
