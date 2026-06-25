@@ -183,4 +183,29 @@ export const POOL: Question[] = [
   { cat: '👊 Tecniche', belt: 8, lvl: 3, q: "Cosa significa 'Ilbo Matsogi'?", options: ['Combattimento a un passo', 'Combattimento a due passi', 'Combattimento libero', 'Difesa personale'], answer: 0, explain: 'Ilbo Matsogi = combattimento a un passo (un attacco e una difesa/contrattacco).' },
   { cat: '👊 Tecniche', belt: 8, lvl: 3, q: "Cosa significa 'Jayu Matsogi'?", options: ['Combattimento libero', 'Combattimento a tre passi', 'Rottura', 'Forma'], answer: 0, explain: 'Jayu Matsogi = combattimento libero (sparring), senza schema prestabilito.' },
   { cat: '👊 Tecniche', belt: 9, lvl: 3, q: "Cosa significa 'Gyok Pa'?", options: ['Rottura (prove di rottura)', 'Combattimento libero', 'Saluto', 'Posizione di pronto'], answer: 0, explain: 'Gyok Pa = rottura: il test di potenza spezzando assi o mattoni.' },
+
+  // ===== 3° LOTTO · terminologia ITF, per gruppo-cintura (difficoltà scalare) =====
+  // -- Bianca (significato delle sillabe) --
+  { cat: '📜 Storia & Teoria', belt: 1, lvl: 1, q: "Cosa significa la sillaba 'TAE' in Taekwon-Do?", options: ['Colpire o saltare col piede', 'Colpire col pugno', 'La via / arte', 'Il maestro'], answer: 0, explain: 'TAE = colpire, saltare o calciare con il piede.' },
+  { cat: '📜 Storia & Teoria', belt: 1, lvl: 1, q: "Cosa significa la sillaba 'KWON' in Taekwon-Do?", options: ['Colpire con il pugno / la mano', 'Colpire col piede', "L'arte", 'La palestra'], answer: 0, explain: 'KWON = colpire o distruggere con il pugno o la mano.' },
+  // -- Gialla --
+  { cat: '👊 Tecniche', belt: 2, lvl: 2, q: "Cosa significa 'Ap Joomuk'?", options: ['Pugno frontale (parte anteriore del pugno)', 'Taglio della mano', 'Gomito', 'Ginocchio'], answer: 0, explain: 'Ap Joomuk = forefist: la parte anteriore del pugno chiuso (le prime due nocche).' },
+  { cat: '👊 Tecniche', belt: 3, lvl: 2, q: "Cosa significa 'Narani Sogi'?", options: ['Posizione di pronti a piedi paralleli', 'Posizione camminando', 'Posizione a L', 'Posizione seduta'], answer: 0, explain: 'Narani Sogi = parallel ready stance: piedi paralleli alla larghezza delle spalle.' },
+  // -- Verde --
+  { cat: '👊 Tecniche', belt: 4, lvl: 2, q: "Cosa significa 'Palkup'?", options: ['Gomito', 'Ginocchio', 'Avambraccio', 'Palmo'], answer: 0, explain: 'Palkup = gomito (es. Palkup Taerigi = colpo di gomito).' },
+  { cat: '👊 Tecniche', belt: 4, lvl: 2, q: "Cosa significa 'Sonbadak'?", options: ['Palmo della mano', 'Taglio della mano', 'Dorso del pugno', 'Punta delle dita'], answer: 0, explain: 'Sonbadak = palmo della mano (es. Sonbadak Noollo Makgi = parata premente col palmo).' },
+  { cat: '👊 Tecniche', belt: 5, lvl: 2, q: "Cosa significa 'Sonkal Dung'?", options: ['Taglio della mano rovesciato (lato del pollice)', 'Dorso del pugno', 'Palmo', 'Avambraccio'], answer: 0, explain: 'Sonkal Dung = reverse knife-hand: il bordo della mano dal lato del pollice.' },
+  { cat: '👊 Tecniche', belt: 5, lvl: 3, q: "Cosa significa 'Bandae Jirugi'?", options: ['Pugno inverso', 'Pugno verticale', 'Doppio pugno', 'Pugno a montante'], answer: 0, explain: 'Bandae Jirugi = pugno inverso (reverse punch), opposto al Baro Jirugi (pugno diretto).' },
+  // -- Blu --
+  { cat: '👊 Tecniche', belt: 6, lvl: 2, q: "Cosa significa 'Balkal'?", options: ['Taglio del piede (bordo esterno)', 'Pianta del piede', 'Tallone', 'Collo del piede'], answer: 0, explain: 'Balkal = footsword: il bordo esterno del piede (es. Yopcha Jirugi colpisce col Balkal).' },
+  { cat: '👊 Tecniche', belt: 6, lvl: 2, q: "Cosa significa 'Moorup'?", options: ['Ginocchio', 'Gomito', 'Stinco', 'Caviglia'], answer: 0, explain: 'Moorup = ginocchio (es. Moorup Chagi = colpo di ginocchio).' },
+  { cat: '👊 Tecniche', belt: 6, lvl: 3, q: "Cosa significa 'Apkumchi'?", options: ['Avampiede (pianta anteriore)', 'Tallone', 'Taglio del piede', 'Collo del piede'], answer: 0, explain: "Apkumchi = avampiede: la pianta sotto le dita, superficie d'urto dell'Ap Chagi." },
+  { cat: '👊 Tecniche', belt: 7, lvl: 3, q: "Cosa significa 'Gojung Sogi'?", options: ['Posizione fissa', 'Posizione a L', 'Posizione verticale', 'Posizione camminando'], answer: 0, explain: 'Gojung Sogi = fixed stance, simile alla L-stance ma più lunga e bassa, peso 50/50.' },
+  { cat: '👊 Tecniche', belt: 7, lvl: 3, q: "Cosa significa 'Soojik Sogi'?", options: ['Posizione verticale', 'Posizione fissa', 'Posizione seduta', 'Posizione di pronti'], answer: 0, explain: 'Soojik Sogi = vertical stance: piedi su due linee, peso distribuito 60/40 sul piede arretrato.' },
+  // -- Rossa --
+  { cat: '👊 Tecniche', belt: 8, lvl: 3, q: "Cosa significa 'Dwitbal Sogi'?", options: ['Posizione sul piede arretrato', 'Posizione camminando', 'Posizione a piedi uniti', 'Posizione di pronti'], answer: 0, explain: 'Dwitbal Sogi = rear foot stance: gran parte del peso sul piede arretrato.' },
+  { cat: '👊 Tecniche', belt: 8, lvl: 3, q: "Cosa significa 'Sonkut'?", options: ['Punta delle dita', 'Nocche', 'Palmo', 'Polso'], answer: 0, explain: 'Sonkut = punta delle dita (es. Sonkut Tulgi = affondo con la punta delle dita).' },
+  { cat: '👊 Tecniche', belt: 9, lvl: 3, q: "Cosa significa 'Ibo Matsogi'?", options: ['Combattimento a due passi', 'Combattimento a un passo', 'Combattimento libero', 'Combattimento a tre passi'], answer: 0, explain: 'Ibo Matsogi = combattimento prestabilito a due passi.' },
+  // -- Nera --
+  { cat: '📜 Storia & Teoria', belt: 10, lvl: 3, q: 'Cosa simboleggiano i 24 tul del Taekwon-Do?', options: ['Le 24 ore del giorno, ovvero la vita di un uomo', 'I 24 maestri fondatori', 'Le 24 province della Corea', 'I 24 colpi fondamentali'], answer: 0, explain: 'Il Gen. Choi creò 24 forme a rappresentare le 24 ore di un giorno: la vita di un uomo paragonata a un solo giorno.' },
 ];
