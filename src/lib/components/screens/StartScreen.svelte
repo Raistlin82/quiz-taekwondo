@@ -53,7 +53,7 @@
   <div class="ink-wash" aria-hidden="true"></div>
 
   <div class="player-card" aria-label="Progressi giocatore">
-    <div class="avatar"><img src="ui/dobok-avatar.png" alt="" /></div>
+    <div class="avatar"><img src="ui/xp-kicker-badge.svg" alt="" /></div>
     <div class="player-main">
       <div class="player-line">
         <b>Lv {lvl.level}</b>

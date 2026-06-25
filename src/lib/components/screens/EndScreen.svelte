@@ -185,7 +185,7 @@
               {@const mine = row.id === myId}
               <div class="rank-row" class:mine={mine} role="listitem" aria-current={mine ? 'true' : undefined}>
                 <span class="rank-medal r{rank + 1}" aria-hidden="true">{rankBadge(rank)}</span>
-                <span class="rank-avatar" aria-hidden="true"><img src="ui/dobok-avatar.png" alt="" /></span>
+                <span class="rank-avatar" aria-hidden="true"><img src="ui/xp-kicker-badge.svg" alt="" /></span>
                 <span class="rank-name">{row.name}{#if mine} <em>(Tu)</em>{/if}</span>
                 <span class="rank-score">{row.score}/{row.total}</span>
                 <span class="rank-xp">{row.points ?? percent} XP</span>
