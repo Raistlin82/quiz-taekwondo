@@ -5,6 +5,7 @@
 
 import { POOL } from '../data/questions';
 import { DIFFICULTIES, TIME_PER_Q, type DifficultyKey, type Question } from '../data/belts';
+import { shuffleWith, type Rng } from '../rng';
 import { playSound, vibrate } from '../audio';
 import { burst } from '../confetti';
 import { themeStore } from './theme.svelte';
@@ -25,19 +26,11 @@ function scorePillOrigin(): { x: number; y: number } | undefined {
   return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
 }
 
-const shuffle = <T>(a: T[]): T[] => {
-  const x = a.slice();
-  for (let i = x.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [x[i], x[j]] = [x[j], x[i]];
-  }
-  return x;
-};
-
-/** Shuffle a question's options and re-point answer to the new index. */
-function shuffleOptions(q: Question): Question {
+/** Shuffle a question's options and re-point answer to the new index.
+ *  An optional Rng makes the layout reproducible for seeded challenge matches. */
+function shuffleOptions(q: Question, rng: Rng = Math.random): Question {
   const correct = q.options[q.answer];
-  const options = shuffle(q.options);
+  const options = shuffleWith(q.options, rng);
   return { ...q, options, answer: options.indexOf(correct) };
 }
 
@@ -114,17 +107,24 @@ class GameStore {
       .sort((a, b) => a.correct / a.total - b.correct / b.total);
   }
 
-  /** Build a balanced quiz: filter by belt+difficulty, round-robin by category. */
-  private buildGame(): Question[] {
-    const maxLvl = DIFFICULTIES[this.selDiff].maxLvl;
-    const avail = POOL.filter((q) => q.belt <= this.selBelt && q.lvl <= maxLvl);
+  /** Build a balanced quiz: filter by belt+difficulty, round-robin by category.
+   *  With an explicit belt/difficulty/count and a seeded Rng the result is fully
+   *  reproducible — this is what lets two players share an identical challenge. */
+  private buildGame(
+    rng: Rng = Math.random,
+    opts?: { belt?: number; diff?: DifficultyKey; count?: number },
+  ): Question[] {
+    const belt = opts?.belt ?? this.selBelt;
+    const diff = opts?.diff ?? this.selDiff;
+    const maxLvl = DIFFICULTIES[diff].maxLvl;
+    const avail = POOL.filter((q) => q.belt <= belt && q.lvl <= maxLvl);
     const byCat: Record<string, Question[]> = {};
     for (const q of avail) (byCat[q.cat] = byCat[q.cat] || []).push(q);
-    const cats = shuffle(Object.keys(byCat));
-    for (const c of cats) byCat[c] = shuffle(byCat[c]);
+    const cats = shuffleWith(Object.keys(byCat), rng);
+    for (const c of cats) byCat[c] = shuffleWith(byCat[c], rng);
 
     const picked: Question[] = [];
-    const target = Math.min(DIFFICULTIES[this.selDiff].count, avail.length);
+    const target = Math.min(opts?.count ?? DIFFICULTIES[diff].count, avail.length);
     let safety = 0;
     while (picked.length < target && safety < 800) {
       for (const c of cats) {
@@ -134,7 +134,7 @@ class GameStore {
       }
       safety++;
     }
-    return shuffle(picked).map(shuffleOptions);
+    return shuffleWith(picked, rng).map((q) => shuffleOptions(q, rng));
   }
 
   /** Build a review session from SRS-due questions (study mode). */
@@ -144,7 +144,7 @@ class GameStore {
     // randomises presentation order. (bug-hunt)
     const chosen = new Set(progressStore.dueKeys().slice(0, limit));
     const items = POOL.filter((q) => chosen.has(qKey(q)));
-    return shuffle(items).map(shuffleOptions);
+    return shuffleWith(items).map((q) => shuffleOptions(q));
   }
 
   private resetCounters(resetGraded = true): void {
