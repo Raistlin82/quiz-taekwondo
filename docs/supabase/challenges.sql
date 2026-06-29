@@ -2,9 +2,11 @@
 -- Sfide (Ruzzle-style best-of-3 duels) — Supabase schema.
 -- Run this once in the Supabase SQL editor of the project.
 --
--- Model: a match is fully described by { seed, belt, difficulty,
--- rounds, round_size }. Both players replay the SAME seed and so get
--- identical questions. The CREATOR always plays first and stores their
+-- Model: a match is fully described by { seed, difficulty, rounds,
+-- round_size }. Challenges are NOT tied to a belt — questions are drawn
+-- from the WHOLE bank (round-robin by category) so it is a fair, equal
+-- duel. Both players replay the SAME seed and so get identical
+-- questions. The CREATOR always plays first and stores their
 -- per-round points; the OPPONENT (a friend via link, or a random player)
 -- plays the same seed and submits via submit_challenge_result(), which
 -- decides the winner (most rounds won; ties broken by total score, then
@@ -18,7 +20,6 @@
 create table if not exists public.challenges (
   id                    text primary key,            -- short shareable code
   seed                  bigint   not null,           -- match seed (0..2^32-1)
-  belt                  int      not null,           -- 1..12
   difficulty            text     not null,           -- 'Facile' | 'Medio' | 'Tosto'
   rounds                int      not null default 3,
   round_size            int      not null default 5, -- questions per round
@@ -68,8 +69,11 @@ create policy challenges_insert on public.challenges
 -- No direct UPDATE/DELETE for clients: opponent writes go through the RPC.
 grant select, insert on public.challenges to anon, authenticated;
 
--- ---- RPC: claim one open random challenge (not your own), atomically ----
-create or replace function public.claim_random_challenge(p_user_id uuid)
+-- ---- RPC: claim one open random challenge (same difficulty, not your own) ----
+create or replace function public.claim_random_challenge(
+  p_user_id    uuid,
+  p_difficulty text
+)
 returns public.challenges
 language plpgsql
 security definer
@@ -83,6 +87,7 @@ begin
      select id from public.challenges
       where is_random = true
         and status = 'awaiting_opponent'
+        and difficulty = p_difficulty
         and (p_user_id is null or creator_user_id is distinct from p_user_id)
       order by created_at asc
       limit 1
@@ -162,6 +167,6 @@ begin
 end;
 $$;
 
-grant execute on function public.claim_random_challenge(uuid) to anon, authenticated;
+grant execute on function public.claim_random_challenge(uuid, text) to anon, authenticated;
 grant execute on function public.submit_challenge_result(text, text, uuid, int[], int, int)
   to anon, authenticated;
