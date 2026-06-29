@@ -55,6 +55,7 @@
     <div class="cat-row">
       <span class="cat" aria-hidden="true"><img src="ui/icons/category.png" alt="" />{q.cat.replace(/^[^\s]+\s*/, '')}</span>
       {#if gameStore.isReview}<span class="review-flag">Ripasso</span>{/if}
+      {#if gameStore.mode === 'challenge'}<span class="review-flag">⚔️ Round {gameStore.challengeRound + 1}/{gameStore.challengeTotalRounds}</span>{/if}
     </div>
 
     {#key gameStore.idx}

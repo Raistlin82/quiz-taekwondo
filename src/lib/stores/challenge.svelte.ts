@@ -55,6 +55,8 @@ class ChallengeStore {
   result = $state<ChallengeRow | null>(null);
   /** Code of the match in play (for the share link). */
   code = $state<string | null>(null);
+  /** 1-based number of the round about to play (for the interstitial). */
+  roundNo = $state(1);
 
   private seed = 0;
   private rounds: Question[][] = [];
@@ -177,6 +179,7 @@ class ChallengeStore {
   private startMatch(): void {
     this.rounds = buildMatch(this.seed);
     this.roundIdx = 0;
+    this.roundNo = 1;
     this.myRoundPoints = [];
     this.mySecs = 0;
     gameStore.onChallengeRoundEnd = (points, secs) => this.onRoundEnd(points, secs);
@@ -188,6 +191,7 @@ class ChallengeStore {
     this.mySecs += secs;
     if (this.roundIdx + 1 < ROUNDS) {
       this.roundIdx += 1;
+      this.roundNo = this.roundIdx + 1;
       this.phase = 'interstitial';
       gameStore.goChallenge();
       setTimeout(() => {

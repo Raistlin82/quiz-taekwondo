@@ -1,9 +1,33 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import { gameStore } from './lib/stores/game.svelte';
   import { themeStore } from './lib/stores/theme.svelte';
+  import { challengeStore } from './lib/stores/challenge.svelte';
   import { startMusic, stopMusic, type MusicScene } from './lib/music';
   import { motionMs } from './lib/motion';
+
+  // Open a challenge from a shared link (?sfida=CODE), then tidy the URL.
+  onMount(() => {
+    try {
+      const u = new URL(window.location.href);
+      const code = u.searchParams.get('sfida');
+      if (code) {
+        u.searchParams.delete('sfida');
+        window.history.replaceState({}, document.title, u.pathname + u.search + u.hash);
+        void challengeStore.accept(code);
+      }
+    } catch {
+      /* ignore */
+    }
+  });
+
+  // Auto-dismiss the Realtime "your turn" toast after a few seconds.
+  $effect(() => {
+    if (!challengeStore.toast) return;
+    const t = setTimeout(() => challengeStore.dismissToast(), 4500);
+    return () => clearTimeout(t);
+  });
 
   function musicScene(): MusicScene {
     if (gameStore.screen === 'quiz') return gameStore.isReview ? 'review' : 'quiz';
@@ -25,6 +49,8 @@
   import EndScreen from './lib/components/screens/EndScreen.svelte';
   import StudyScreen from './lib/components/screens/StudyScreen.svelte';
   import RankingScreen from './lib/components/screens/RankingScreen.svelte';
+  import ChallengeScreen from './lib/components/screens/ChallengeScreen.svelte';
+  import ChallengeLadderScreen from './lib/components/screens/ChallengeLadderScreen.svelte';
 </script>
 
 <div class="bg"></div>
@@ -62,9 +88,39 @@
         <StudyScreen />
       {:else if gameStore.screen === 'ranking'}
         <RankingScreen />
+      {:else if gameStore.screen === 'challenge'}
+        <ChallengeScreen />
+      {:else if gameStore.screen === 'challengeLadder'}
+        <ChallengeLadderScreen />
       {/if}
     </div>
   {/key}
 
+  {#if challengeStore.toast}
+    <button class="toast" onclick={() => challengeStore.dismissToast()} transition:fade={{ duration: motionMs(200) }}>
+      🔔 {challengeStore.toast}
+    </button>
+  {/if}
+
   <footer class="app-footer">© 2026 Daniel Rendina</footer>
 </div>
+
+<style>
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    z-index: 50;
+    max-width: min(92vw, 420px);
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 12px 18px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    box-shadow: 0 10px 26px -10px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+  }
+</style>

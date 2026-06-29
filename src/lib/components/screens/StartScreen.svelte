@@ -132,6 +132,7 @@
 
   <nav class="bottom-nav" aria-label="Navigazione principale">
     <button class="active" aria-current="page"><img src="ui/icons/home.png" alt="" /><span>Home</span></button>
+    <button onclick={() => gameStore.goChallenge()}><span class="nav-emoji" aria-hidden="true">⚔️</span><span>Sfide</span></button>
     <button onclick={() => gameStore.goRanking()}><img src="ui/icons/chart.png" alt="" /><span>Statistiche</span></button>
     <button onclick={() => (settingsOpen = !settingsOpen)}><img src="ui/icons/settings.png" alt="" /><span>Impostazioni</span></button>
   </nav>
@@ -420,6 +421,13 @@
     height: 24px;
     object-fit: contain;
     opacity: 0.82;
+  }
+  .bottom-nav .nav-emoji {
+    font-size: 19px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    opacity: 0.9;
   }
   .bottom-nav button.active img {
     filter: sepia(1) saturate(3) hue-rotate(320deg);
