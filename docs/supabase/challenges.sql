@@ -184,4 +184,16 @@ grant execute on function public.submit_challenge_result(text, text, uuid, int[]
 -- listens for its own matches resolving (status -> 'completed') to pop an
 -- in-app "your turn / result ready" toast. Realtime still honours RLS, and
 -- our SELECT policy is public, so anon subscribers receive the row changes.
-alter publication supabase_realtime add table public.challenges;
+-- Idempotent: only add the table if it isn't already in the publication, so
+-- re-running this whole script never errors with "already member of publication".
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'challenges'
+  ) then
+    alter publication supabase_realtime add table public.challenges;
+  end if;
+end $$;
