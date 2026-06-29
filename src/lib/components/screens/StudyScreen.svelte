@@ -4,6 +4,8 @@
   import { beltById, BELTS } from '../../data/belts';
   import { gameStore, qKey } from '../../stores/game.svelte';
   import { progressStore } from '../../stores/progress.svelte';
+  import { themeStore } from '../../stores/theme.svelte';
+  import { playSound } from '../../audio';
   import { motionMs } from '../../motion';
 
   // Cards for the selected belt (all levels), grouped by category order.
@@ -28,6 +30,7 @@
   }
   function flagReview() {
     if (card) {
+      playSound('review', themeStore.sound);
       progressStore.reviewGraded(qKey(card), false);
       go(1);
     }

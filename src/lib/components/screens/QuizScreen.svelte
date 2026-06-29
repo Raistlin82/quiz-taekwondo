@@ -1,6 +1,8 @@
 <script lang="ts">
   import { fly, fade } from 'svelte/transition';
   import { gameStore } from '../../stores/game.svelte';
+  import { themeStore } from '../../stores/theme.svelte';
+  import { playSound } from '../../audio';
   import { motionMs } from '../../motion';
   import Timer from '../Timer.svelte';
   import AnswerButton from '../AnswerButton.svelte';
@@ -23,6 +25,11 @@
     if (gameStore.answered) return;
     praise = praises[Math.floor(Math.random() * praises.length)];
     gameStore.answer(i);
+  }
+
+  function next() {
+    playSound('next', themeStore.sound);
+    gameStore.next();
   }
 
   const isCorrect = $derived(gameStore.answered && gameStore.selected === correctIdx);
@@ -86,7 +93,7 @@
         {/if}
       </div>
 
-      <button class="cta next-btn" onclick={() => gameStore.next()}>
+      <button class="cta next-btn" onclick={next}>
         {gameStore.isLast ? 'Vedi risultato' : 'Avanti'} <span aria-hidden="true">›</span>
       </button>
     {/if}

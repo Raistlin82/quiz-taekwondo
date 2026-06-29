@@ -2,13 +2,22 @@
   import { fade } from 'svelte/transition';
   import { gameStore } from './lib/stores/game.svelte';
   import { themeStore } from './lib/stores/theme.svelte';
-  import { startMusic, stopMusic } from './lib/music';
+  import { startMusic, stopMusic, type MusicScene } from './lib/music';
   import { motionMs } from './lib/motion';
+
+  function musicScene(): MusicScene {
+    if (gameStore.screen === 'quiz') return gameStore.isReview ? 'review' : 'quiz';
+    if (gameStore.screen === 'study') return 'study';
+    if (gameStore.screen === 'ranking') return 'ranking';
+    if (gameStore.screen === 'end') return !gameStore.isReview && gameStore.pct >= 0.87 ? 'victory' : 'result';
+    return 'home';
+  }
 
   // Drive the background-music engine off the persisted setting. The toggle is
   // a user gesture, so the AudioContext can resume and play.
   $effect(() => {
-    if (themeStore.music) startMusic();
+    const scene = musicScene();
+    if (themeStore.music) startMusic(scene);
     else stopMusic();
   });
   import StartScreen from './lib/components/screens/StartScreen.svelte';

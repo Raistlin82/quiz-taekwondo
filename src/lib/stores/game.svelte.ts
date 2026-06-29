@@ -164,6 +164,7 @@ class GameStore {
 
   startQuiz(): void {
     this.playerName = (this.playerName.trim() || 'Ospite').slice(0, 18);
+    playSound('start', themeStore.sound);
     this.mode = 'quiz';
     this.questions = this.buildGame();
     this.resetCounters();
@@ -179,6 +180,7 @@ class GameStore {
       return;
     }
     this.playerName = (this.playerName.trim() || 'Ospite').slice(0, 18);
+    playSound('review', themeStore.sound);
     this.mode = 'review';
     this.questions = review;
     this.resetCounters();
@@ -237,7 +239,7 @@ class GameStore {
         if (this.timeLeft > 7) this.fastCount += 1;
       }
       this.correctKeys.push(qKey(q));
-      playSound('good', themeStore.sound);
+      playSound(this.streak > 0 && this.streak % 5 === 0 ? 'streak' : 'good', themeStore.sound);
       vibrate(30, themeStore.haptics);
       // burst from the score pill, bigger on streak milestones (U37)
       burst(scorePillOrigin(), this.streak >= 5 ? 30 : 18);
@@ -247,7 +249,7 @@ class GameStore {
     } else {
       this.streak = 0;
       this.wrong = [...this.wrong, q];
-      playSound('bad', themeStore.sound);
+      playSound(i === null ? 'timeout' : 'bad', themeStore.sound);
       vibrate([40, 30, 40], themeStore.haptics);
       this.gradeOnce(q, false);
     }
