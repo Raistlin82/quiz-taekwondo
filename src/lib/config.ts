@@ -24,6 +24,17 @@ export const SHARED = Boolean(SUPABASE_URL && SUPABASE_KEY);
  * directly in leaderboard.ts) and Auth (anonymous guest sessions + magic-link).
  * `detectSessionInUrl` lets the magic-link callback complete on page load.
  * Everything that uses this must degrade gracefully when it's null.
+ *
+ * flowType is 'implicit' (NOT the supabase-js default 'pkce') ON PURPOSE: this
+ * app's whole point is logging in on ANY device ("ritrovi i progressi su ogni
+ * dispositivo"). PKCE magic links carry a `?code=` that can only be exchanged on
+ * the device that requested the link, because the one-time `code-verifier` lives
+ * in that device's localStorage — open the email on your phone and the exchange
+ * is silently skipped, leaving you a guest. Implicit links return the session
+ * tokens directly in the URL hash (`#access_token=…`), so they complete on any
+ * device. The trade-off (tokens briefly in the URL) is acceptable here: the anon
+ * key is already public, RLS guards the data, and we strip the hash right after
+ * (see auth.svelte.ts → cleanAuthReturnFromUrl).
  */
 export const supabase: SupabaseClient | null = SHARED
   ? createClient(SUPABASE_URL, SUPABASE_KEY, {
@@ -31,7 +42,7 @@ export const supabase: SupabaseClient | null = SHARED
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
-        flowType: 'pkce',
+        flowType: 'implicit',
       },
     })
   : null;
