@@ -12,8 +12,8 @@ import { burst } from '../confetti';
 import { themeStore } from './theme.svelte';
 import { progressStore, answerXp, type GameResult, type CatStat } from './progress.svelte';
 
-export type Screen = 'start' | 'quiz' | 'end' | 'study' | 'ranking';
-export type GameMode = 'quiz' | 'review';
+export type Screen = 'start' | 'quiz' | 'end' | 'study' | 'ranking' | 'challenge' | 'challengeLadder';
+export type GameMode = 'quiz' | 'review' | 'challenge';
 
 /** Stable key for a question (used by the SRS queue). */
 export const qKey = (q: Question): string => q.q;
@@ -59,6 +59,14 @@ class GameStore {
 
   // end-of-game
   summary = $state<EndSummary | null>(null);
+
+  // challenge (best-of-3) — current round bookkeeping for the QuizScreen badge.
+  challengeRound = $state(0); // 0-based
+  challengeTotalRounds = $state(0);
+  private chRoundPoints = 0; // speed-weighted points scored in the current round
+  /** Set by the challenge store; called when a challenge round finishes so the
+   *  store can advance to the interstitial / next round / final result. */
+  onChallengeRoundEnd: ((points: number, secs: number) => void) | null = null;
 
   private correctKeys: string[] = [];
   // SRS cards already graded in the CURRENT review session — prevents a
@@ -128,6 +136,7 @@ class GameStore {
     this.gameXp = 0;
     this.lastGain = 0;
     this.timeUsed = 0;
+    this.chRoundPoints = 0;
     this.wrong = [];
     this.correctKeys = [];
     if (resetGraded) this.gradedKeys.clear();
@@ -201,14 +210,15 @@ class GameStore {
       this.score += 1;
       this.streak += 1;
       this.maxStreak = Math.max(this.maxStreak, this.streak);
-      // Review mode is intentionally XP-free (endGame hardcodes xpGained: 0 and
-      // never calls recordGame). Gate the accumulation so the live "+XP" popup
-      // can't promise XP that is then discarded. (bug-hunt)
-      if (!this.isReview) {
+      // Only the normal quiz earns XP/progress. Review is XP-free (SRS only),
+      // and challenge mode scores speed-weighted ROUND points instead (no XP).
+      if (this.mode === 'quiz') {
         const gain = answerXp(this.timeLeft);
         this.lastGain = gain;
         this.gameXp += gain;
         if (this.timeLeft > 7) this.fastCount += 1;
+      } else if (this.mode === 'challenge') {
+        this.chRoundPoints += answerXp(this.timeLeft);
       }
       this.correctKeys.push(qKey(q));
       playSound(this.streak > 0 && this.streak % 5 === 0 ? 'streak' : 'good', themeStore.sound);
@@ -247,6 +257,13 @@ class GameStore {
 
   private endGame(): void {
     this.stopTimer();
+    // Challenge: a "game" is one round of the best-of-3. Hand the round's
+    // points/seconds to the challenge store, which drives what happens next
+    // (interstitial → next round, or the final head-to-head result).
+    if (this.mode === 'challenge') {
+      this.onChallengeRoundEnd?.(this.chRoundPoints, this.timeUsed);
+      return;
+    }
     if (this.isReview) {
       const newBadges = progressStore.completeStudySession();
       this.summary = { newBadges, xpGained: 0, leveledTo: null };
@@ -282,6 +299,28 @@ class GameStore {
   goRanking(): void {
     this.stopTimer();
     this.screen = 'ranking';
+  }
+
+  goChallenge(): void {
+    this.stopTimer();
+    this.screen = 'challenge';
+  }
+
+  goChallengeLadder(): void {
+    this.stopTimer();
+    this.screen = 'challengeLadder';
+  }
+
+  /** Play one round (5 questions) of a challenge match. The challenge store
+   *  builds the rounds from the shared seed and calls this per round. */
+  startChallengeRound(questions: Question[], roundIndex: number, totalRounds: number): void {
+    this.mode = 'challenge';
+    this.questions = questions;
+    this.resetCounters();
+    this.challengeRound = roundIndex;
+    this.challengeTotalRounds = totalRounds;
+    this.screen = 'quiz';
+    this.beginQuestion();
   }
 
   /* ---- timer ---- */
