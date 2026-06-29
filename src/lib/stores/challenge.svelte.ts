@@ -207,7 +207,9 @@ class ChallengeStore {
   private async finish(): Promise<void> {
     gameStore.onChallengeRoundEnd = null;
     const score = this.myRoundPoints.reduce((a, b) => a + b, 0);
-    const secs = this.mySecs;
+    // timeUsed accumulates fractional seconds (the timer ticks in 0.1s); the DB
+    // columns are integers, so round before sending / comparing.
+    const secs = Math.round(this.mySecs);
     const name = this.playerName();
     const uid = authStore.userId;
     this.clearSub();

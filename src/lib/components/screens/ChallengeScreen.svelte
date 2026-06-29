@@ -91,6 +91,10 @@
       <div class="big">⚔️</div>
       <h1 class="title">{challengeStore.loadedRow?.creator_name ?? 'Qualcuno'} ti sfida!</h1>
       <p class="sub center-t">Meglio di {ROUNDS} round · {MATCH_SIZE} domande, le stesse del tuo sfidante.</p>
+      <label class="field">
+        <span>Il tuo nome</span>
+        <input class="name-box" maxlength="18" placeholder="Come ti chiami?" bind:value={gameStore.playerName} />
+      </label>
       <button class="cta" onclick={() => challengeStore.playLoaded()}>Accetta la sfida</button>
       <button class="ghost" onclick={() => challengeStore.open()}>Annulla</button>
     </div>
