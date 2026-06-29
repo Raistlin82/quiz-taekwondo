@@ -9,6 +9,15 @@
   let expanded = $state(false);
   let email = $state('');
 
+  // If a returning magic link failed (e.g. expired link → authStore sets an
+  // error on init), open the panel so the message and a retry are visible
+  // instead of leaving the user a silent guest.
+  $effect(() => {
+    if (authStore.status === 'error' && authStore.message && !authStore.isLoggedIn) {
+      expanded = true;
+    }
+  });
+
   function toggle() {
     expanded = !expanded;
     if (!expanded) authStore.resetSave();

@@ -33,6 +33,26 @@ function urlHasAuthReturn(): boolean {
   return /[?&](code|token_hash|error)=/.test(search) || /(access_token|error|type)=/.test(hash);
 }
 
+/** Read an auth error from the magic-link return URL (hash or query), if any.
+ *  On a failed return (expired / already-used link) auth-js throws BEFORE it
+ *  clears the hash, so these params are still here — we use them to show a real
+ *  message instead of silently dropping the user back to a guest session. */
+function authErrorFromUrl(): string | null {
+  if (typeof window === 'undefined') return null;
+  const fromBoth = (key: string): string | null => {
+    const q = new URLSearchParams(window.location.search);
+    const h = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    return q.get(key) || h.get(key);
+  };
+  const code = fromBoth('error_code') ?? '';
+  const err = fromBoth('error') ?? '';
+  if (!code && !err) return null;
+  if (/expired/i.test(code) || /access_denied/i.test(err)) {
+    return 'Il link di accesso è scaduto o è già stato usato. Richiedine uno nuovo qui sotto.';
+  }
+  return 'Accesso non riuscito. Richiedi un nuovo link qui sotto.';
+}
+
 /** Strip auth params from the URL after the session is established, so a manual
  *  refresh doesn't try to re-exchange an already-consumed code. */
 function cleanAuthReturnFromUrl(): void {
@@ -102,6 +122,8 @@ class AuthStore {
     }
     try {
       const authReturn = urlHasAuthReturn();
+      // Capture any error the magic link came back with BEFORE we tidy the URL.
+      const authErr = authReturn ? authErrorFromUrl() : null;
       // Subscribe FIRST so the SIGNED_IN fired by the magic-link code exchange
       // is caught even if it resolves after getSession().
       const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -124,6 +146,12 @@ class AuthStore {
       if (!this.user) {
         const { data: anon } = await supabase.auth.signInAnonymously();
         this.applyUser(anon.user ?? null);
+      }
+      // If the magic link came back with an error and we did NOT end up logged
+      // in, surface it so the user gets feedback instead of a silent guest.
+      if (authErr && !this.isLoggedIn) {
+        this.status = 'error';
+        this.message = authErr;
       }
     } catch {
       /* Auth not configured/unreachable — stay in local mode. */
