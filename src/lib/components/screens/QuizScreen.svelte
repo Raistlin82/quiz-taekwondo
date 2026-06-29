@@ -86,7 +86,7 @@
         transition:fly={{ y: 8, duration: motionMs(200) }}
       >
         {#if isCorrect}
-          <span class="h">Esatto! {praise}{#if !gameStore.isReview} <span class="xp">+{gameStore.lastGain} XP</span>{/if}</span>
+          <span class="h">Esatto! {praise}{#if gameStore.mode === 'quiz'} <span class="xp">+{gameStore.lastGain} XP</span>{/if}</span>
           {q.explain}
         {:else}
           <span class="h">{timedOut ? 'Tempo scaduto' : 'Quasi!'}</span>

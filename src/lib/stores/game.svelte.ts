@@ -67,6 +67,10 @@ class GameStore {
   /** Set by the challenge store; called when a challenge round finishes so the
    *  store can advance to the interstitial / next round / final result. */
   onChallengeRoundEnd: ((points: number, secs: number) => void) | null = null;
+  /** Set by the challenge store; called when navigation LEAVES the challenge
+   *  flow (Home / Statistiche / a normal quiz) so it can tear down the Realtime
+   *  subscription and any pending interstitial timer. */
+  onLeaveChallenge: (() => void) | null = null;
 
   private correctKeys: string[] = [];
   // SRS cards already graded in the CURRENT review session — prevents a
@@ -144,6 +148,7 @@ class GameStore {
   }
 
   startQuiz(): void {
+    this.onLeaveChallenge?.();
     this.playerName = (this.playerName.trim() || 'Ospite').slice(0, 18);
     playSound('start', themeStore.sound);
     this.mode = 'quiz';
@@ -154,6 +159,7 @@ class GameStore {
   }
 
   startReview(): void {
+    this.onLeaveChallenge?.();
     const review = this.buildReview();
     // Guard the empty case so the button is never a silent no-op (B4).
     if (!review.length) {
@@ -287,16 +293,19 @@ class GameStore {
   }
 
   goHome(): void {
+    this.onLeaveChallenge?.();
     this.stopTimer();
     this.screen = 'start';
   }
 
   goStudy(): void {
+    this.onLeaveChallenge?.();
     this.stopTimer();
     this.screen = 'study';
   }
 
   goRanking(): void {
+    this.onLeaveChallenge?.();
     this.stopTimer();
     this.screen = 'ranking';
   }

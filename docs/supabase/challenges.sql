@@ -83,7 +83,12 @@ begin
    where id = (
      select id from public.challenges
       where is_random = true
-        and status = 'awaiting_opponent'
+        -- an open match, OR a stale claim whose claimer abandoned it (TTL):
+        -- this releases matches stuck in 'claimed' when a player quits mid-duel.
+        and (
+          status = 'awaiting_opponent'
+          or (status = 'claimed' and claimed_at < now() - interval '5 minutes')
+        )
         and (p_user_id is null or creator_user_id is distinct from p_user_id)
       order by created_at asc
       limit 1
@@ -120,6 +125,13 @@ begin
   end if;
   if c.opponent_user_id is not null or c.status = 'completed' then
     raise exception 'challenge % already played', p_code;
+  end if;
+  -- For a RANDOM match, only the player who claimed it may submit (a friend
+  -- link, is_random=false, stays open to whoever holds the link). This enforces
+  -- the reservation made by claim_random_challenge so a code-guesser can't
+  -- hijack a claimed random match.
+  if c.is_random and c.claimed_by is not null and c.claimed_by is distinct from p_user_id then
+    raise exception 'challenge % is reserved by another player', p_code;
   end if;
 
   -- Round-by-round wins (Ruzzle best-of-3).

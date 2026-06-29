@@ -64,9 +64,25 @@ class ChallengeStore {
   private myRoundPoints: number[] = [];
   private mySecs = 0;
   private unsub: (() => void) | null = null;
+  private interT: ReturnType<typeof setTimeout> | null = null;
+
+  constructor() {
+    // Tear the duel down whenever the player navigates OUT of the challenge
+    // flow (Home / Statistiche / starting a normal quiz). Without this the
+    // Realtime channel would leak and a late "opponent finished" callback could
+    // flip the store to 'result' under an unrelated screen, and a pending
+    // interstitial timer could yank the player back into the quiz.
+    gameStore.onLeaveChallenge = () => this.leave();
+  }
 
   get available(): boolean {
     return challengesAvailable();
+  }
+
+  /** Full teardown when leaving the challenge flow. */
+  leave(): void {
+    gameStore.onChallengeRoundEnd = null;
+    this.reset();
   }
 
   get shareUrl(): string | null {
@@ -103,6 +119,10 @@ class ChallengeStore {
   private clearSub(): void {
     this.unsub?.();
     this.unsub = null;
+    if (this.interT) {
+      clearTimeout(this.interT);
+      this.interT = null;
+    }
   }
 
   // ---- start flows ----
@@ -194,7 +214,10 @@ class ChallengeStore {
       this.roundNo = this.roundIdx + 1;
       this.phase = 'interstitial';
       gameStore.goChallenge();
-      setTimeout(() => {
+      this.interT = setTimeout(() => {
+        this.interT = null;
+        // Only resume if still mid-interstitial on the challenge screen (the
+        // player may have navigated away, which clears the timer via leave()).
         if (this.phase === 'interstitial') {
           gameStore.startChallengeRound(this.rounds[this.roundIdx], this.roundIdx, ROUNDS);
         }
@@ -249,6 +272,8 @@ class ChallengeStore {
     this.loadedRow = created;
     this.phase = 'await';
     this.unsub = subscribeChallenge(created.id, (row) => {
+      // Ignore a late event if the player already navigated away from waiting.
+      if (this.phase !== 'await') return;
       this.result = row;
       this.toast = `${row.opponent_name ?? 'Qualcuno'} ha risposto alla tua sfida!`;
       this.phase = 'result';
